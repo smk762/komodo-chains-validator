@@ -82,7 +82,7 @@ def chains_start_and_sync():
             else:
                 print(colorize("Chain " + ticker + " is synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "green"))
         if are_all_chains_synced:
-            print(colorize("All chains are on sync now!"), "green")
+            print(colorize("All chains are on sync now!", "green"))
             break
         else:
             print(colorize("Chain are not synced yet", "red"))
