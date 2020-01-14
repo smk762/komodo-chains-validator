@@ -6,6 +6,25 @@ import os
 import re
 
 
+def colorize(string, color):
+
+    colors = {
+        'blue': '\033[94m',
+        'cyan': '\033[96m',
+        'yellow': '\033[93m',
+        'magenta': '\033[95m',
+        'green': '\033[92m',
+        'red': '\033[91m',
+        'black': '\033[30m',
+        'grey': '\033[90m',
+        'pink': '\033[95m'
+    }
+    if color not in colors:
+        return string
+    else:
+        return colors[color] + string + '\033[0m'
+
+
 def def_credentials(chain):
     rpcport = ''
     ac_dir = ''
@@ -43,10 +62,12 @@ ac_tickers = ["REVS", "SUPERNET", "DEX", "PANGEA", "JUMBLR", "BET", "CRYPTO", "H
               "CEAL", "MESH", "AXO", "ETOMIC", "BTCH", "NINJA", "OOT", "BNTN", "CHAIN", "PRLPAY", "DSEC", "EQL", "ZILLA", "RFOX", "SEC",
               "CCL", "PIRATE", "PGT", "KMDICE", "DION", "KSB", "OUR", "ILN", "RICK", "MORTY", "KOIN", "ZEXO", "K64", "HUSH3", "THC", "COMMOD", "WLC21"]
 
+
 # sync chains
 def chains_start_and_sync():
     # starting assetchains daemons
     subprocess.run(["./assetchains.old"])
+    time.sleep(10)
     # creating a proxy for each assetchain
     for ticker in ac_tickers:
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
@@ -56,15 +77,15 @@ def chains_start_and_sync():
         for ticker in ac_tickers:
             get_info_result = globals()["assetchain_proxy_{}".format(ticker)].getinfo()
             if get_info_result["blocks"] < get_info_result["longestchain"]:
-                print("Chain " + ticker + " is NOT synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]))
+                print(colorize("Chain " + ticker + " is NOT synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "red"))
                 are_all_chains_synced = False
             else:
-                print("Chain " + ticker + " is synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]))
+                print(colorize("Chain " + ticker + " is synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "green"))
         if are_all_chains_synced:
-            print("All chains are on sync now!")
+            print(colorize("All chains are on sync now!"), "green")
             break
         else:
-            ("Chain are not synced yet")
+            print(colorize("Chain are not synced yet", "red"))
             time.sleep(60)
     return True
 
