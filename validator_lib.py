@@ -2,6 +2,9 @@ from slickrpc import Proxy
 import time
 import subprocess
 import platform
+import os
+import re
+
 
 def def_credentials(chain):
     rpcport = ''
