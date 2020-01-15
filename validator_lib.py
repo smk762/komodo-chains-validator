@@ -5,6 +5,7 @@ import platform
 import os
 import re
 import json
+import shutil
 
 
 def colorize(string, color):
@@ -114,4 +115,4 @@ def clean_sync_results():
     for ticker in ac_tickers:
         kmd_dir = os.environ['HOME'] + '/.komodo'
         ac_dir = str(kmd_dir + '/' + ticker + '/')
-        os.rmdir(ac_dir)
+        shutil.rmtree(ac_dir)
