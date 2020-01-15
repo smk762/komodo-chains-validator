@@ -4,6 +4,7 @@ import subprocess
 import platform
 import os
 import re
+import json
 
 
 def colorize(string, color):
@@ -89,8 +90,28 @@ def chains_start_and_sync():
             time.sleep(60)
     return True
 
-# write down state
+# write down last block hash
+def save_ac_latest_block_data():
+    blocks_hashes = {}
+    for ticker in ac_tickers:
+        blocks_hashes[ticker] = {}
+        latest_block_height = globals()["assetchain_proxy_{}".format(ticker)].getinfo()["longestchain"]
+        latest_block_hash = globals()["assetchain_proxy_{}".format(ticker)].getblock(latest_block_height)["hash"]
+        blocks_hashes[ticker]["height"] = latest_block_height
+        blocks_hashes[ticker]["blockhash"] = latest_block_hash
+    string_timestamp = str(int(time.time()))
+    filename = 'ac_blocks_'+string_timestamp+'.json'
+    with open(filename, 'w+') as fp:
+        json.dump(blocks_hashes, fp, indent=4)
+    print("Saved data to " + filename)
 
 # clean everything
-
-# repeat chains sync
+def clean_sync_results():
+    for ticker in ac_tickers:
+        get_info_result = globals()["assetchain_proxy_{}".format(ticker)].stop()
+        print(ticker + " stopped!")
+    time.sleep(30)
+    for ticker in ac_tickers:
+        kmd_dir = os.environ['HOME'] + '/.komodo'
+        ac_dir = str(kmd_dir + '/' + ticker + '/')
+        os.rmdir(ac_dir)
