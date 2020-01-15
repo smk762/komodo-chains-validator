@@ -96,7 +96,7 @@ def save_ac_latest_block_data():
     for ticker in ac_tickers:
         blocks_hashes[ticker] = {}
         latest_block_height = globals()["assetchain_proxy_{}".format(ticker)].getinfo()["longestchain"]
-        latest_block_hash = globals()["assetchain_proxy_{}".format(ticker)].getblock(latest_block_height)["hash"]
+        latest_block_hash = globals()["assetchain_proxy_{}".format(ticker)].getblock(str(latest_block_height))["hash"]
         blocks_hashes[ticker]["height"] = latest_block_height
         blocks_hashes[ticker]["blockhash"] = latest_block_hash
     string_timestamp = str(int(time.time()))
