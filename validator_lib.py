@@ -102,7 +102,7 @@ def save_ac_latest_block_data():
         blocks_hashes[ticker]["blockhash"] = latest_block_hash
     string_timestamp = str(int(time.time()))
     filename = 'ac_blocks_'+string_timestamp+'.json'
-    with open(filename, 'w+') as fp:
+    with open('chains_status/' + filename, 'w+') as fp:
         json.dump(blocks_hashes, fp, indent=4)
     print("Saved data to " + filename)
 
