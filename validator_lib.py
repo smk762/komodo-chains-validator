@@ -61,8 +61,8 @@ def def_credentials(chain):
     return Proxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport)))
 
 ac_tickers = ["REVS", "SUPERNET", "DEX", "PANGEA", "JUMBLR", "BET", "CRYPTO", "HODL", "MSHARK", "BOTS", "MGW", "COQUICASH", "WLC", "KV",
-              "CEAL", "MESH", "AXO", "ETOMIC", "BTCH", "NINJA", "OOT", "BNTN", "CHAIN", "PRLPAY", "DSEC", "EQL", "ZILLA", "RFOX", "SEC",
-              "CCL", "PIRATE", "PGT", "KMDICE", "DION", "KSB", "OUR", "ILN", "RICK", "MORTY", "KOIN", "ZEXO", "K64", "HUSH3", "THC", "COMMOD", "WLC21"]
+              "MESH", "AXO", "ETOMIC", "BTCH", "NINJA", "OOT", "BNTN", "PRLPAY", "EQL", "ZILLA", "RFOX", "SEC",
+              "CCL", "PIRATE", "PGT", "DION", "KSB", "OUR", "ILN", "RICK", "MORTY", "KOIN", "ZEXO", "K64", "HUSH3", "THC", "WLC21"]
 
 
 # sync chains
