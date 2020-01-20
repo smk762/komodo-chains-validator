@@ -323,6 +323,7 @@ def report_nn_tip_hashes():
     launch_stats_oracle(oracle_ticker)
     stats_orcl_info = get_node_oracle(oracle_ticker)
     # start and creating a proxy for each assetchain
+    sync_status = {}
     for ticker in ac_tickers:
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
         sync_status.update({ticker:{}})
