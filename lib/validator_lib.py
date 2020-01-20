@@ -18,6 +18,12 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
+app_subfolders = ['chains_status', 'ticker_output', 'config']
+
+for folder in app_subfolders:
+    if not os.path.exists(sys.path[0]+"/"+folder):
+        os.makedirs(sys.path[0]+"/"+folder)
+
 def colorize(string, color):
 
     colors = {
