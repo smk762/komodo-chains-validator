@@ -227,7 +227,7 @@ def sim_chains_start_and_sync():
             json.dump(sync_status, fp, indent=4)
         logger.info("Saved global state data to global_sync.json")
         oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
-        oraclelib.write2oracle(oracle_rpc, stats_orcl_info['txid'], sync_status)
+        oraclelib.write2oracle(oracle_rpc, stats_orcl_info['txid'], str(sync_status))
         time.sleep(60)
     return True
 
@@ -368,7 +368,7 @@ def report_nn_tip_hashes():
             json.dump(sync_status, fp, indent=4)
         logger.info("Saved global state data to global_sync.json")
         oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
-        oraclelib.write2oracle(oracle_rpc, stats_orcl_info['txid'], sync_status)
+        oraclelib.write2oracle(oracle_rpc, stats_orcl_info['txid'], str(sync_status))
         logger.info("Global sync_status data written to oracle ["+stats_orcl_info['txid']+"]")
         time.sleep(60)
     return True
