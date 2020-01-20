@@ -4,6 +4,7 @@ import sys
 import subprocess
 import time
 import logging
+import codecs
 
 logger = logging.getLogger(__name__)
 
