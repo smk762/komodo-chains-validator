@@ -1,0 +1,7 @@
+/ticker_output/*
+/config/*
+/chains_status/*
+__pycache__
+*_7776
+komodod
+komodo-cli
