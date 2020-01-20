@@ -27,7 +27,7 @@ for folder in app_subfolders:
 if not os.path.isfile('config/pubkey.txt'):
     with open('config/pubkey.txt', 'w+') as fp:
         fp.write("")
-        
+
 with open('config/pubkey.txt', 'r') as fp:
     local_pubkey = fp.read()
 
@@ -321,6 +321,7 @@ def create_node_oracle(oracle_ticker):
             sys.exit()
     else:
         logger.warning("Oracle creation aborted: pubkey not recognised in notary / validator pubkeys dicts.")
+        logger.warning("Submit a Pull Request to add it...")
         sys.exit()
 
 def report_nn_tip_hashes():
