@@ -312,6 +312,7 @@ def create_node_oracle(oracle_ticker):
                 sys.exit()
         except Exception as e:
             logger.warning("Oracle creation failed: "+str(e))
+            logger.warning("Did you launch "+oracle_ticker+" with pubkey ["+local_pubkey+"]?")
             sys.exit()
     else:
         logger.warning("Oracle creation aborted: pubkey ["+local_pubkey+"] not recognised in notary / validator pubkeys dicts.")
