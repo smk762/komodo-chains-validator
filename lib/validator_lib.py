@@ -270,13 +270,13 @@ def launch_stats_oracle(oracle_ticker):
     globals()["assetchain_proxy_{}".format(oracle_ticker)] = def_credentials(oracle_ticker)
 
 def get_node_oracle(oracle_ticker):
-    if not os.path.isfile('config/oracle_info.json'):
+    if not os.path.isfile(sys.path[0]+'/config/oracle.json'):
         local_oracle_params = {}
         orcl_info = create_node_oracle(oracle_ticker)
-        with open('config/oracles.json', 'w+') as fp:
+        with open(sys.path[0]+'config/oracle.json', 'w+') as fp:
             json.dump(orcl_info, fp, indent=4)
-        print("Saved local ticker oracle data to config/oracle_info.json")
-    with open('config/oracles.json', 'r') as fp:
+        print("Saved local ticker oracle data to "+sys.path[0]+"config/oracle.json")
+    with open(sys.path[0]+'config/oracle.json', 'r') as fp:
         orcl_info = json.loads(fp.read())
     return orcl_info    
 
@@ -297,6 +297,7 @@ def create_node_oracle(oracle_ticker):
     node_name = get_local_node_name()
     if node_name != '':
         logger.info("Welcome "+node_name+"!")
+        logger.info("Creating your oracle...")
         try:
             oracle_ticker_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
             get_info = oracle_ticker_rpc.getinfo()
