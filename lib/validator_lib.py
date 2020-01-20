@@ -85,8 +85,8 @@ def def_credentials(chain):
         if chain == 'KMD':
             rpcport = 7771
         else:
-            print("rpcport not in conf file, exiting")
-            print("check "+coin_config_file)
+            logger.info("rpcport not in conf file, exiting")
+            logger.info("check "+coin_config_file)
             exit(1)
 
     return Proxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport)))
@@ -193,12 +193,12 @@ def sim_chains_start_and_sync():
                         "longestchain":get_info_result["longestchain"]
                     })
                 if get_info_result["blocks"] < get_info_result["longestchain"]:
-                    print(colorize("Chain " + ticker + " is NOT synced."
+                    logger.info(colorize("Chain " + ticker + " is NOT synced."
                                  + " Blocks: " + str(get_info_result["blocks"]) 
                                  + " Longestchain: " + str(get_info_result["longestchain"]),
                                    "red"))
                 else:
-                    print(colorize("Chain " + ticker + " is synced."
+                    logger.info(colorize("Chain " + ticker + " is synced."
                                 + " Blocks: " + str(get_info_result["blocks"])
                                 + " Longestchain: " + str(get_info_result["longestchain"])
                                 + " Latest Blockhash: " + ticker_rpc.getblock(str(get_info_result["blocks"]))["hash"],
@@ -213,19 +213,19 @@ def sim_chains_start_and_sync():
                     filename = ticker+'_sync_'+str(ticker_timestamp)+'.json'
                     with open('chains_status/' + filename, 'w+') as fp:
                         json.dump(sync_status[ticker], fp, indent=4)
-                    print("Saved "+ticker+" sync data to " + filename)
+                    logger.info("Saved "+ticker+" sync data to " + filename)
                     clean_chain_data(ticker)
                     restart_ticker(ticker)
                     time.sleep(30)
                     
                 time.sleep(10)
             except Exception as e:
-                print(e)
+                logger.info(e)
         # save global state file
         sync_status.update({"last_updated":ticker_timestamp})
         with open('chains_status/global_sync.json', 'w+') as fp:
             json.dump(sync_status, fp, indent=4)
-        print("Saved global state data to global_sync.json")
+        logger.info("Saved global state data to global_sync.json")
         oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
         oraclelib.write2oracle(oracle_rpc, stats_orcl_info['txid'], sync_status)
         time.sleep(60)
@@ -234,11 +234,11 @@ def sim_chains_start_and_sync():
 # Clean ticker data folder
 def clean_chain_data(ticker):
     stop_result = globals()["assetchain_proxy_{}".format(ticker)].stop()
-    print(ticker + " stopped!")
+    logger.info(ticker + " stopped!")
     time.sleep(30)
     ac_dir = str(kmd_dir + '/' + ticker + '/')
     shutil.rmtree(ac_dir)
-    print(ac_dir+" deleted")
+    logger.info(ac_dir+" deleted")
 
 def restart_ticker(ticker):        
     ticker_launch = ''
@@ -251,14 +251,14 @@ def restart_ticker(ticker):
             line = fp.readline()
     if ticker_launch != '':
         ticker_output = open('ticker_output/'+ticker+"_output.log",'w+')
-        print("starting "+ticker)
+        logger.info("starting "+ticker)
         subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
         time.sleep(15)
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
 
 def launch_stats_oracle(oracle_ticker):
     ticker_output = open('ticker_output/'+oracle_ticker+"_output.log",'w+')
-    print("starting "+oracle_ticker)
+    logger.info("starting "+oracle_ticker)
     subprocess.Popen(oracle_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
     time.sleep(15)
     globals()["assetchain_proxy_{}".format(oracle_ticker)] = def_credentials(oracle_ticker)
@@ -269,7 +269,7 @@ def get_node_oracle(oracle_ticker):
         orcl_info = create_node_oracle(oracle_ticker)
         with open(sys.path[0]+'/config/oracle.json', 'w+') as fp:
             json.dump(orcl_info, fp, indent=4)
-        print("Saved local ticker oracle data to "+sys.path[0]+"/config/oracle.json")
+        logger.info("Saved oracle info data to "+sys.path[0]+"/config/oracle.json")
     with open(sys.path[0]+'/config/oracle.json', 'r') as fp:
         orcl_info = json.loads(fp.read())
     return orcl_info    
@@ -343,12 +343,12 @@ def report_nn_tip_hashes():
                         "longestchain":get_info_result["longestchain"]
                     })
                 if get_info_result["blocks"] < get_info_result["longestchain"]:
-                    print(colorize("Chain " + ticker + " is NOT synced."
+                    logger.info(colorize("Chain " + ticker + " is NOT synced."
                                 + " Blocks: " + str(get_info_result["blocks"])
                                 + " Longestchain: "+ str(get_info_result["longestchain"]),
                                   "red"))
                 else:
-                    print(colorize("Chain " + ticker + " is synced."
+                    logger.info(colorize("Chain " + ticker + " is synced."
                                 + " Blocks: " + str(get_info_result["blocks"])
                                 + " Longestchain: " + str(get_info_result["longestchain"])
                                 + " Latest Blockhash: " + ticker_rpc.getblock(str(get_info_result["blocks"]))["hash"],
@@ -360,15 +360,16 @@ def report_nn_tip_hashes():
                             "last_longestchain":latest_block_fifth_hash
                         })
             except Exception as e:
-                print(e)
+                logger.info(e)
             time.sleep(30)
         # save global state file
         sync_status.update({"last_updated":ticker_timestamp})
         with open('chains_status/global_sync.json', 'w+') as fp:
             json.dump(sync_status, fp, indent=4)
-        print("Saved global state data to global_sync.json")
+        logger.info("Saved global state data to global_sync.json")
         oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
         oraclelib.write2oracle(oracle_rpc, stats_orcl_info['txid'], sync_status)
+        logger.info("Global sync_status data written to oracle ["+stats_orcl_info['txid']+"]")
         time.sleep(60)
     return True
 
@@ -391,7 +392,7 @@ def compare_hashes():
             sync_data = json.loads(f.read())
         latest_block = sync_data['last_longestchain']
         latest_hash = sync_data['last_longesthash']
-        print("| "+ticker+" | "+latest_block+" | "+latest_hash+" |")
+        logger.info("| "+ticker+" | "+latest_block+" | "+latest_hash+" |")
         # compare with chain explorers / NN 
         external_hashes = get_external_hashes(latest_block)
 
@@ -419,15 +420,15 @@ def chains_start_and_sync():
         for ticker in ac_tickers:
             get_info_result = globals()["assetchain_proxy_{}".format(ticker)].getinfo()
             if get_info_result["blocks"] < get_info_result["longestchain"]:
-                print(colorize("Chain " + ticker + " is NOT synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "red"))
+                logger.info(colorize("Chain " + ticker + " is NOT synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "red"))
                 are_all_chains_synced = False
             else:
-                print(colorize("Chain " + ticker + " is synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "green"))
+                logger.info(colorize("Chain " + ticker + " is synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "green"))
         if are_all_chains_synced:
-            print(colorize("All chains are on sync now!", "green"))
+            logger.info(colorize("All chains are on sync now!", "green"))
             break
         else:
-            print(colorize("Chain are not synced yet", "red"))
+            logger.info(colorize("Chain are not synced yet", "red"))
             time.sleep(60)
     return True
 
@@ -445,13 +446,13 @@ def save_ac_latest_block_data():
     filename = 'ac_blocks_'+string_timestamp+'.json'
     with open('chains_status/' + filename, 'w+') as fp:
         json.dump(blocks_hashes, fp, indent=4)
-    print("Saved data to " + filename)
+    logger.info("Saved data to " + filename)
 
 # clean everything
 def clean_sync_results():
     for ticker in ac_tickers:
         get_info_result = globals()["assetchain_proxy_{}".format(ticker)].stop()
-        print(ticker + " stopped!")
+        logger.info(ticker + " stopped!")
     time.sleep(30)
     for ticker in ac_tickers:
         kmd_dir = os.environ['HOME'] + '/.komodo'
