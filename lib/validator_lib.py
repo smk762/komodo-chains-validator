@@ -20,8 +20,8 @@ for folder in app_subfolders:
     if not os.path.exists(sys.path[0]+"/"+folder):
         os.makedirs(sys.path[0]+"/"+folder)
 
-if not os.path.isfile('config/pubkey.txt'):
-    with open('config/pubkey.txt', 'w+') as fp:
+if not os.path.isfile(sys.path[0]+'/config/pubkey.txt'):
+    with open(sys.path[0]+'/config/pubkey.txt', 'w+') as fp:
         fp.write("")
 
 with open('config/pubkey.txt', 'r') as fp:
@@ -184,28 +184,30 @@ def sim_chains_start_and_sync():
     while True:
         for ticker in ac_tickers:
             try:
+                ticker_rpc = globals()["assetchain_proxy_{}".format(ticker)]
                 ticker_timestamp = int(time.time())
                 sync_status[ticker].update({"last_updated":ticker_timestamp})
-                get_info_result = globals()["assetchain_proxy_{}".format(ticker)].getinfo()
+                get_info_result = ticker_rpc.getinfo()
+                sync_status[ticker].update({
+                        "blocks":get_info_result["blocks"],
+                        "longestchain":get_info_result["longestchain"]
+                    })
                 if get_info_result["blocks"] < get_info_result["longestchain"]:
-                    print(colorize("Chain " + ticker + " is NOT synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "red"))
-                    sync_status[ticker].update({
-                            "blocks":get_info_result["blocks"],
-                            "longestchain":get_info_result["longestchain"]
-                        })
+                    print(colorize("Chain " + ticker + " is NOT synced."
+                                 + " Blocks: " + str(get_info_result["blocks"]) 
+                                 + " Longestchain: " + str(get_info_result["longestchain"]),
+                                   "red"))
                 else:
-                    latest_block_hash = globals()["assetchain_proxy_{}".format(ticker)].getblock(str(get_info_result["longestchain"]))["hash"]
                     print(colorize("Chain " + ticker + " is synced."
                                 + " Blocks: " + str(get_info_result["blocks"])
                                 + " Longestchain: " + str(get_info_result["longestchain"])
-                                + " Latest Blockhash: " + str(latest_block_hash), "green"))
+                                + " Latest Blockhash: " + ticker_rpc.getblock(str(get_info_result["blocks"]))["hash"],
+                                  "green"))
+                    latest_block_fifth = int(math.floor(get_info_result["longestchain"]/5)*5)
+                    latest_block_fifth_hash = ticker_rpc.getblock(str(latest_block_fifth))["hash"]
                     sync_status[ticker].update({
-                            "last_longesthash":get_info_result["blocks"],
-                            "last_longestchain":latest_block_hash
-                        })
-                    sync_status[ticker].update({
-                            "blocks":get_info_result["blocks"],
-                            "longestchain":get_info_result["longestchain"]
+                            "last_longesthash":latest_block_fifth,
+                            "last_longestchain":latest_block_fifth_hash
                         })
                     # save timestamped file for ticker if synced
                     filename = ticker+'_sync_'+str(ticker_timestamp)+'.json'
@@ -265,10 +267,10 @@ def get_node_oracle(oracle_ticker):
     if not os.path.isfile(sys.path[0]+'/config/oracle.json'):
         local_oracle_params = {}
         orcl_info = create_node_oracle(oracle_ticker)
-        with open(sys.path[0]+'config/oracle.json', 'w+') as fp:
+        with open(sys.path[0]+'/config/oracle.json', 'w+') as fp:
             json.dump(orcl_info, fp, indent=4)
-        print("Saved local ticker oracle data to "+sys.path[0]+"config/oracle.json")
-    with open(sys.path[0]+'config/oracle.json', 'r') as fp:
+        print("Saved local ticker oracle data to "+sys.path[0]+"/config/oracle.json")
+    with open(sys.path[0]+'/config/oracle.json', 'r') as fp:
         orcl_info = json.loads(fp.read())
     return orcl_info    
 
@@ -336,26 +338,27 @@ def report_nn_tip_hashes():
                 ticker_timestamp = int(time.time())
                 sync_status[ticker].update({"last_updated":ticker_timestamp})
                 get_info_result = ticker_rpc.getinfo()
+                sync_status[ticker].update({
+                        "blocks":get_info_result["blocks"],
+                        "longestchain":get_info_result["longestchain"]
+                    })
                 if get_info_result["blocks"] < get_info_result["longestchain"]:
                     print(colorize("Chain " + ticker + " is NOT synced."
                                 + " Blocks: " + str(get_info_result["blocks"])
                                 + " Longestchain: "+ str(get_info_result["longestchain"]),
                                   "red"))
                 else:
-                    latest_block_hash = ticker_rpc.getblock(str(get_info_result["longestchain"]))["hash"]
                     print(colorize("Chain " + ticker + " is synced."
                                 + " Blocks: " + str(get_info_result["blocks"])
                                 + " Longestchain: " + str(get_info_result["longestchain"])
-                                + " Latest Blockhash: " + str(latest_block_hash),
+                                + " Latest Blockhash: " + ticker_rpc.getblock(str(get_info_result["blocks"]))["hash"],
                                   "green"))
+                    latest_block_fifth = int(math.floor(get_info_result["longestchain"]/5)*5)
+                    latest_block_fifth_hash = ticker_rpc.getblock(str(latest_block_fifth))["hash"]
                     sync_status[ticker].update({
-                            "last_longesthash":get_info_result["blocks"],
-                            "last_longestchain":latest_block_hash
+                            "last_longesthash":latest_block_fifth,
+                            "last_longestchain":latest_block_fifth_hash
                         })
-                sync_status[ticker].update({
-                        "blocks":get_info_result["blocks"],
-                        "longestchain":get_info_result["longestchain"]
-                    })
             except Exception as e:
                 print(e)
             time.sleep(30)
