@@ -24,7 +24,13 @@ for folder in app_subfolders:
     if not os.path.exists(sys.path[0]+"/"+folder):
         os.makedirs(sys.path[0]+"/"+folder)
 
-local_pubkey = ""
+if not os.path.isfile('config/pubkey.txt'):
+    with open('config/pubkey.txt', 'w+') as fp:
+        fp.write("")
+        
+with open('config/pubkey.txt', 'r') as fp:
+    local_pubkey = fp.read()
+
 oracle_ticker = "STATSORCL"
 oracle_launch = ['./komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
                 '-ac_reward=10000000000', '-ac_staked=99', '-ac_cc=762',
@@ -33,7 +39,8 @@ oracle_launch = ['./komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
 if local_pubkey == "":
     logger.warning("You need to define a local pubkey for a valid address in "+oracle_ticker)
     logger.warning("Launch "+oracle_ticker+" with "+" ".join(oracle_launch))
-    logger.warning("Create an address, validate it and input the pubkey in validate_lib.py")
+    logger.warning("If running on a Notary Node, import your main node address and use its pubkey!")
+    logger.warning("Otherwise, create an address, validate it and input the pubkey in config/pubkey.txt")
     logger.warning("Then ask @smk762#7640 on Discord to send "+oracle_ticker+" funds to cover oracle fees.")
     sys.exit()
 
