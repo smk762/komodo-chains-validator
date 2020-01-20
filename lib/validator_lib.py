@@ -273,11 +273,13 @@ def get_node_oracle(oracle_ticker):
 
 def get_local_node_name():
     node_name = ''
+    logger.info("Checking if ["+local_pubkey+"] in notary_pubkeys")
     for node in list(notary_pubkeys.keys()):
         if notary_pubkeys[node] == local_pubkey:
             node_name = node
             break
     if node_name == '':
+        logger.info("Checking if ["+local_pubkey+"] in validator_pubkeys")
         for node in list(validator_pubkeys.keys()):
             if validator_pubkeys[node] == local_pubkey:
                 node_name = node
@@ -312,7 +314,7 @@ def create_node_oracle(oracle_ticker):
             logger.warning("Oracle creation failed: "+str(e))
             sys.exit()
     else:
-        logger.warning("Oracle creation aborted: pubkey not recognised in notary / validator pubkeys dicts.")
+        logger.warning("Oracle creation aborted: pubkey ["+local_pubkey+"] not recognised in notary / validator pubkeys dicts.")
         logger.warning("Submit a Pull Request to add it...")
         sys.exit()
 
