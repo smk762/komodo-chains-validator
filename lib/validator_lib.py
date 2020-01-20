@@ -24,7 +24,7 @@ if not os.path.isfile('config/pubkey.txt'):
         fp.write("")
 
 with open('config/pubkey.txt', 'r') as fp:
-    local_pubkey = fp.read()
+    local_pubkey = fp.read().strip()
 
 oracle_ticker = "STATSORCL"
 oracle_launch = ['komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
