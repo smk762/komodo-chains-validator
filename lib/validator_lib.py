@@ -24,6 +24,19 @@ for folder in app_subfolders:
     if not os.path.exists(sys.path[0]+"/"+folder):
         os.makedirs(sys.path[0]+"/"+folder)
 
+oracle_ticker = "STATSORCL"
+oracle_launch = ['./komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
+                '-ac_reward=10000000000', '-ac_staked=99', '-ac_cc=762',
+                '-ac_halving=762000', '-addnode=116.203.120.91', '-addnode=116.203.120.163', '-pubkey='+local_pubkey]
+
+local_pubkey = ""
+if local_pubkey == "":
+    logger.warning("You need to define a local pubkey for a valid address in "+oracle_ticker)
+    logger.warning("Launch "+oracle_ticker+" with "+" ".join(oracle_launch))
+    logger.warning("Create an address, validate it and input the pubkey in validate_lib.py")
+    logger.warning("Then ask @smk762#7640 on Discord to send "+oracle_ticker+" funds to cover oracle fees.")
+    sys.exit()
+
 def colorize(string, color):
 
     colors = {
@@ -151,9 +164,6 @@ notary_pubkeys =  {
 validator_pubkeys =  {
     "SYNC_24": "02317cf599fb502d96ac36fa239f9cf308825738fbbe0d3237f783f895ab4e5fee", 
 }
-
-oracle_ticker = "STATSORCL"
-local_pubkey = "02317cf599fb502d96ac36fa239f9cf308825738fbbe0d3237f783f895ab4e5fee"
 
 oracle_launch = ['./komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
                 '-ac_reward=10000000000', '-ac_staked=99', '-ac_cc=762',
