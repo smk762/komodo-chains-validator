@@ -27,7 +27,7 @@ with open('config/pubkey.txt', 'r') as fp:
     local_pubkey = fp.read()
 
 oracle_ticker = "STATSORCL"
-oracle_launch = ['./komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
+oracle_launch = ['komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
                 '-ac_reward=10000000000', '-ac_staked=99', '-ac_cc=762',
                 '-ac_halving=762000', '-addnode=116.203.120.91', '-addnode=116.203.120.163', '-pubkey='+local_pubkey]
 
