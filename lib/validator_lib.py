@@ -24,12 +24,12 @@ for folder in app_subfolders:
     if not os.path.exists(sys.path[0]+"/"+folder):
         os.makedirs(sys.path[0]+"/"+folder)
 
+local_pubkey = ""
 oracle_ticker = "STATSORCL"
 oracle_launch = ['./komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
                 '-ac_reward=10000000000', '-ac_staked=99', '-ac_cc=762',
                 '-ac_halving=762000', '-addnode=116.203.120.91', '-addnode=116.203.120.163', '-pubkey='+local_pubkey]
 
-local_pubkey = ""
 if local_pubkey == "":
     logger.warning("You need to define a local pubkey for a valid address in "+oracle_ticker)
     logger.warning("Launch "+oracle_ticker+" with "+" ".join(oracle_launch))
