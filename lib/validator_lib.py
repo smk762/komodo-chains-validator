@@ -361,7 +361,7 @@ def report_nn_tip_hashes():
                         })
             except Exception as e:
                 logger.info(e)
-            time.sleep(30)
+            time.sleep(1)
         # save global state file
         sync_status.update({"last_updated":ticker_timestamp})
         with open('chains_status/global_sync.json', 'w+') as fp:
@@ -370,7 +370,7 @@ def report_nn_tip_hashes():
         oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
         oraclelib.write2oracle(oracle_rpc, stats_orcl_info['txid'], str(sync_status))
         logger.info("Global sync_status data written to oracle ["+stats_orcl_info['txid']+"]")
-        time.sleep(60)
+        time.sleep(300)
     return True
 
 
