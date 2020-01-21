@@ -379,12 +379,12 @@ def report_nn_tip_hashes():
                             "last_longestchain":sync_ticker_block
                         })
                 if ticker_sync_block_hash == sync_ticker_hash:
-                    logger.info(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] MATCHING! "), "green")
-                    logger.info(colorize("Hash: ["+sync_ticker_hash+"]"), 'green')
+                    logger.info(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] MATCHING! ", 'green'))
+                    logger.info(colorize("Hash: ["+sync_ticker_hash+"]", 'green'))
                 else:
-                    logger.warning(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] FAILED! "), "red")
-                    logger.warning(colorize("Sync node hash: ["+sync_ticker_hash+"]"), 'red')
-                    logger.warning(colorize("Notary node hash: ["+ticker_sync_block_hash+"]"), 'red')
+                    logger.warning(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] FAILED! ", "red"))
+                    logger.warning(colorize("Sync node hash: ["+sync_ticker_hash+"]", 'red'))
+                    logger.warning(colorize("Notary node hash: ["+ticker_sync_block_hash+"]", 'red'))
             except Exception as e:
                 logger.warning(ticker+" has no sync node data yet")
                 logger.info(e)
