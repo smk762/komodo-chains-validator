@@ -345,10 +345,10 @@ def report_nn_tip_hashes():
     sync_data = get_sync_node_data()
     while True:
         for ticker in ac_tickers:
-            sync_ticker_data = sync_data[ticker]
-            sync_ticker_block = sync_ticker_data['last_longestchain']
-            sync_ticker_hash = sync_ticker_data['last_longesthash']
             try:
+                sync_ticker_data = sync_data[ticker]
+                sync_ticker_block = sync_ticker_data['last_longestchain']
+                sync_ticker_hash = sync_ticker_data['last_longesthash']
                 ticker_rpc = globals()["assetchain_proxy_{}".format(ticker)]
                 ticker_timestamp = int(time.time())
                 sync_status[ticker].update({"last_updated":ticker_timestamp})
@@ -374,6 +374,7 @@ def report_nn_tip_hashes():
                             "last_longestchain":sync_ticker_block
                         })
             except Exception as e:
+                logger.warning(ticker+" has no sync node data yet")
                 logger.info(e)
             time.sleep(1)
         # save global state file
