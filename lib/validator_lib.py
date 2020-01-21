@@ -206,8 +206,8 @@ def sim_chains_start_and_sync():
                     latest_block_fifth = int(math.floor(get_info_result["longestchain"]/5)*5)
                     latest_block_fifth_hash = ticker_rpc.getblock(str(latest_block_fifth))["hash"]
                     sync_status[ticker].update({
-                            "last_longesthash":latest_block_fifth,
-                            "last_longestchain":latest_block_fifth_hash
+                            "last_longesthash":latest_block_fifth_hash,
+                            "last_longestchain":latest_block_fifth
                         })
                     # save timestamped file for ticker if synced
                     filename = ticker+'_sync_'+str(ticker_timestamp)+'.json'
@@ -356,8 +356,8 @@ def report_nn_tip_hashes():
                     latest_block_fifth = int(math.floor(get_info_result["longestchain"]/5)*5)
                     latest_block_fifth_hash = ticker_rpc.getblock(str(latest_block_fifth))["hash"]
                     sync_status[ticker].update({
-                            "last_longesthash":latest_block_fifth,
-                            "last_longestchain":latest_block_fifth_hash
+                            "last_longesthash":latest_block_fifth_hash,
+                            "last_longestchain":latest_block_fifth
                         })
             except Exception as e:
                 logger.info(e)
