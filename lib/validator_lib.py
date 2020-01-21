@@ -169,7 +169,12 @@ validator_pubkeys =  {
 }
 
 kmd_dir = os.environ['HOME'] + '/.komodo'
-sync_status = {}
+
+if not os.path.isfile(sys.path[0]+'/chains_status/global_sync.json'):
+    sync_status = {}
+else:
+    with open(sys.path[0]+'/chains_status/global_sync.json', 'r') as fp:
+        sync_status = json.loads(fp.read())
 
 # sync chains
 def sim_chains_start_and_sync():
@@ -179,7 +184,8 @@ def sim_chains_start_and_sync():
     for ticker in ac_tickers:
         restart_ticker(ticker)
         time.sleep(5)
-        sync_status.update({ticker:{}})
+        if ticker not in sync_status:
+            sync_status.update({ticker:{}})
     # waiting until assetchains are synced
     while True:
         for ticker in ac_tickers:
@@ -338,7 +344,6 @@ def report_nn_tip_hashes():
     launch_stats_oracle(oracle_ticker)
     stats_orcl_info = get_node_oracle(oracle_ticker)
     # start and creating a proxy for each assetchain
-    sync_status = {}
     for ticker in ac_tickers:
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
         sync_status.update({ticker:{}})
@@ -387,7 +392,6 @@ def report_nn_tip_hashes():
         logger.info("Global sync_status data written to oracle ["+stats_orcl_info['txid']+"]")
         time.sleep(300)
     return True
-
 
 ## REVIEW FUNCTS BELOW FOR REMOVAL 
 def compare_hashes():
