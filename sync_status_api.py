@@ -146,6 +146,10 @@ async def show_hashtip_oracles():
 async def show_hashtips():
     return get_hashtips()
 
+@app.get("/show_sync_node_data")
+async def show_sync_node_data():
+    return validator_lib.get_sync_node_data()
+
 @app.get("/chains_monitored")
 async def chains_monitored():
     return {"version": "0.0.2"}
