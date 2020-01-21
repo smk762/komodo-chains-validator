@@ -259,7 +259,7 @@ def restart_ticker(ticker):
         ticker_output = open('ticker_output/'+ticker+"_output.log",'w+')
         logger.info("starting "+ticker)
         subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
-        time.sleep(15)
+        time.sleep(300)
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
 
 def launch_stats_oracle(oracle_ticker):
@@ -386,8 +386,8 @@ def report_nn_tip_hashes():
                     logger.warning(colorize("Sync node hash: ["+sync_ticker_hash+"]", 'red'))
                     logger.warning(colorize("Notary node hash: ["+ticker_sync_block_hash+"]", 'red'))
             except Exception as e:
-                logger.warning(ticker+" has no sync node data yet")
-                logger.info(e)
+                logger.warning(ticker+" error: "+str(e))
+                logger.info(ticker+" sync data: "+str(sync_ticker_data))
             time.sleep(1)
         # save global state file
         sync_status.update({"last_updated":ticker_timestamp})
@@ -397,7 +397,7 @@ def report_nn_tip_hashes():
         oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
         oraclelib.write2oracle(oracle_rpc, stats_orcl_info['txid'], str(sync_status))
         logger.info("Global sync_status data written to oracle ["+stats_orcl_info['txid']+"]")
-        time.sleep(300)
+        time.sleep(1800)
     return True
 
 ## REVIEW FUNCTS BELOW FOR REMOVAL 
