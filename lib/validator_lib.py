@@ -322,6 +322,18 @@ def create_node_oracle(oracle_ticker):
         logger.warning("Submit a Pull Request to add it...")
         sys.exit()
 
+def get_sync_node_data():
+    # Get sync node's latest hashes
+    sync_data = {}
+    rpc_proxy = def_credentials(oracle_ticker)
+    oracle_txid = 'b4fef41d11b6aab51b77945d3df7cdaeb9148dfa4df1e56d2057ec0d4cdab8c4'
+    baton = 'RSGFUXm7cYe4h3u312qmtVnyHJnVqpS1EJ'
+    samples = rpc_proxy.oraclessamples(oracle_txid, baton, str(1))
+    if samples['result'] == 'success':
+        if len(samples['samples'][0]['data']) > 0:
+            sync_data = json.loads(samples['samples'][0]['data'][0].replace("\'", "\""))
+    return sync_data
+
 def report_nn_tip_hashes():
     launch_stats_oracle(oracle_ticker)
     stats_orcl_info = get_node_oracle(oracle_ticker)
@@ -330,9 +342,12 @@ def report_nn_tip_hashes():
     for ticker in ac_tickers:
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
         sync_status.update({ticker:{}})
-    # waiting until assetchains are synced
+    sync_data = get_sync_node_data()
     while True:
         for ticker in ac_tickers:
+            sync_ticker_data = sync_data[ticker]
+            sync_ticker_block = sync_ticker_data['last_longestchain']
+            sync_ticker_hash = sync_ticker_data['last_longesthash']
             try:
                 ticker_rpc = globals()["assetchain_proxy_{}".format(ticker)]
                 ticker_timestamp = int(time.time())
@@ -353,11 +368,10 @@ def report_nn_tip_hashes():
                                 + " Longestchain: " + str(get_info_result["longestchain"])
                                 + " Latest Blockhash: " + ticker_rpc.getblock(str(get_info_result["blocks"]))["hash"],
                                   "green"))
-                    latest_block_fifth = int(math.floor(get_info_result["longestchain"]/5)*5)
-                    latest_block_fifth_hash = ticker_rpc.getblock(str(latest_block_fifth))["hash"]
+                    ticker_sync_block_hash = ticker_rpc.getblock(str(sync_ticker_block))["hash"]
                     sync_status[ticker].update({
-                            "last_longesthash":latest_block_fifth_hash,
-                            "last_longestchain":latest_block_fifth
+                            "last_longesthash":ticker_sync_block_hash,
+                            "last_longestchain":sync_ticker_block
                         })
             except Exception as e:
                 logger.info(e)
