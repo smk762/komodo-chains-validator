@@ -34,6 +34,7 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 rpc_proxy = validator_lib.def_credentials(validator_lib.oracle_ticker)
+ignore_oracles = []
 
 def get_hashtip_oracles():
     # get oracles list
@@ -41,44 +42,46 @@ def get_hashtip_oracles():
     oracles_list = rpc_proxy.oracleslist()
     # check oracle name / publishers
     for oracle_txid in oracles_list:
-        oracle_info = rpc_proxy.oraclesinfo(oracle_txid)
-        try:
-            desc = oracle_info['description'].split()
-            if desc[1] == 'blockhash' and desc[2] == 'stats':
-                node_name = desc[0]
-            publishers = oracle_info['registered']
-            for publisher in publishers:
-                pubkey = publisher['publisher']
-                if node_name in validator_lib.notary_pubkeys:
-                    if pubkey == validator_lib.notary_pubkeys[node_name]:
-                        hashtip_oracles.update({
-                            node_name: {
-                                "oracle_txid":oracle_info['txid'],
-                                "publisher":pubkey,
-                                "baton":publisher['baton'],
-                                "funds":publisher['funds'],                        
-                                "node_type":"notary",
-                            }
-                        })
-                elif node_name in validator_lib.validator_pubkeys:
-                    if pubkey == validator_lib.validator_pubkeys[node_name]:
-                        hashtip_oracles.update({
-                            node_name: {
-                                "oracle_txid":oracle_info['txid'],
-                                "publisher":pubkey,
-                                "baton":publisher['baton'],
-                                "funds":publisher['funds'],                        
-                                "node_type":"sync_loop",
-                            }
-                        })
-        except Exception as e:
-            logger.warning("Error getting hashtip oracle: "+str(e))
-            logger.warning(node_name+" Oracle TXID: "+str(oracle_txid))
-            logger.warning(node_name+" Oracle info: "+str(oracle_info))
+        if oracle_txid not in ignore_oracles:
+            oracle_info = rpc_proxy.oraclesinfo(oracle_txid)
+            try:
+                desc = oracle_info['description'].split()
+                if desc[1] == 'blockhash' and desc[2] == 'stats':
+                    node_name = desc[0]
+                publishers = oracle_info['registered']
+                for publisher in publishers:
+                    pubkey = publisher['publisher']
+                    if node_name in validator_lib.notary_pubkeys:
+                        if pubkey == validator_lib.notary_pubkeys[node_name]:
+                            hashtip_oracles.update({
+                                node_name: {
+                                    "oracle_txid":oracle_info['txid'],
+                                    "publisher":pubkey,
+                                    "baton":publisher['baton'],
+                                    "funds":publisher['funds'],                        
+                                    "node_type":"notary",
+                                }
+                            })
+                    elif node_name in validator_lib.validator_pubkeys:
+                        if pubkey == validator_lib.validator_pubkeys[node_name]:
+                            hashtip_oracles.update({
+                                node_name: {
+                                    "oracle_txid":oracle_info['txid'],
+                                    "publisher":pubkey,
+                                    "baton":publisher['baton'],
+                                    "funds":publisher['funds'],                        
+                                    "node_type":"sync_loop",
+                                }
+                            })
+            except Exception as e:
+                logger.warning("Error getting hashtip oracle: "+str(e))
+                logger.warning(node_name+" Oracle TXID: "+str(oracle_txid))
+                logger.warning(node_name+" Oracle info: "+str(oracle_info))
     return hashtip_oracles
 
 def get_hashtips():
     hashtips = {}
+    node_name_update = {}
     hashtip_oracles = get_hashtip_oracles()
     for node_name in hashtip_oracles:
         try:
@@ -89,18 +92,37 @@ def get_hashtips():
                 if len(samples['samples'][0]['data']) > 0:
                     sample_data = json.loads(samples['samples'][0]['data'][0].replace("\'", "\""))
                     for ticker in sample_data:
-                        if ticker not in hashtips:
-                            hashtips.update({ticker:{}})
-                        tip_block = str(sample_data[ticker]['last_longestchain'])
-                        tip_hash = sample_data[ticker]['last_longesthash']
-                        if tip_block not in hashtips[ticker]:
-                            hashtips[ticker].update({tip_block:{}})
-                        if tip_hash not in hashtips[ticker][tip_block]:
-                            hashtips[ticker][tip_block].update({tip_hash:[]})
-                        logger.info(hashtips)
-                        nodes_on_hash = hashtips[ticker][tip_block][tip_hash]
-                        nodes_on_hash.append(node_name)
-                        hashtips[ticker][tip_block].update({tip_hash:nodes_on_hash})
+                        if ticker == 'last_updated':
+                            if 'last_updated' not in hashtips:
+                                hashtips.update({'last_updated':{}})
+                            hashtips['last_updated'].update({node_name:sample_data['last_updated']})
+                        else:
+                            try:
+                                tip_block = str(sample_data[ticker]['last_longestchain'])
+                                tip_hash = sample_data[ticker]['last_longesthash']
+                                tip_updated = sample_data[ticker]['last_updated']
+
+                                if ticker not in hashtips:
+                                    hashtips.update({ticker:{}})
+                                if ticker not in node_name_update:
+                                    node_name_update.update({ticker:tip_updated})
+
+                                # ignore dead oracles with same node_name
+                                if tip_updated >= node_name_update[ticker]:
+                                    if tip_block not in hashtips[ticker]:
+                                        hashtips[ticker].update({tip_block:{}})
+                                    if tip_hash not in hashtips[ticker][tip_block]:
+                                        hashtips[ticker][tip_block].update({tip_hash:[]})
+                                    # add node_name to ticker / block / hash list
+                                    nodes_on_hash = hashtips[ticker][tip_block][tip_hash]
+                                    nodes_on_hash.append(node_name)
+                                    hashtips[ticker][tip_block].update({tip_hash:nodes_on_hash})
+                                    # set latest update time for node_name / ticker
+                                    node_name_update.update({ticker:tip_updated})
+                            except Exception as e:
+                                pass
+                                # this can happen for unsynced chains on the looper
+                                #logger.warning("Error getting hashtip for "+node_name+"/"+ticker+": "+str(e))
         except Exception as e:
             logger.warning("Error getting hashtip: "+str(e))
     return hashtips
