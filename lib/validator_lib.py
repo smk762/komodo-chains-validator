@@ -24,7 +24,7 @@ if not os.path.isfile(sys.path[0]+'/config/pubkey.txt'):
     with open(sys.path[0]+'/config/pubkey.txt', 'w+') as fp:
         fp.write("")
 
-with open('config/pubkey.txt', 'r') as fp:
+with open(sys.path[0]+'/config/pubkey.txt', 'r') as fp:
     local_pubkey = fp.read().strip()
 
 oracle_ticker = "STATSORCL"
@@ -217,7 +217,7 @@ def sim_chains_start_and_sync():
                         })
                     # save timestamped file for ticker if synced
                     filename = ticker+'_sync_'+str(ticker_timestamp)+'.json'
-                    with open('chains_status/' + filename, 'w+') as fp:
+                    with open(sys.path[0]+'/chains_status/' + filename, 'w+') as fp:
                         json.dump(sync_status[ticker], fp, indent=4)
                     logger.info("Saved "+ticker+" sync data to " + filename)
                     clean_chain_data(ticker)
@@ -229,7 +229,7 @@ def sim_chains_start_and_sync():
                 logger.info(e)
         # save global state file
         sync_status.update({"last_updated":ticker_timestamp})
-        with open('chains_status/global_sync.json', 'w+') as fp:
+        with open(sys.path[0]+'/chains_status/global_sync.json', 'w+') as fp:
             json.dump(sync_status, fp, indent=4)
         logger.info("Saved global state data to global_sync.json")
         oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
@@ -248,7 +248,7 @@ def clean_chain_data(ticker):
 
 def restart_ticker(ticker):        
     ticker_launch = ''
-    with open('assetchains.old') as fp:
+    with open(sys.path[0]+'/assetchains.old') as fp:
         line = fp.readline()
         while line:
             if line.find(ticker) > 0:
@@ -256,14 +256,14 @@ def restart_ticker(ticker):
                 break
             line = fp.readline()
     if ticker_launch != '':
-        ticker_output = open('ticker_output/'+ticker+"_output.log",'w+')
+        ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
         logger.info("starting "+ticker)
         subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
         time.sleep(300)
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
 
 def launch_stats_oracle(oracle_ticker):
-    ticker_output = open('ticker_output/'+oracle_ticker+"_output.log",'w+')
+    ticker_output = open(sys.path[0]+'/ticker_output/'+oracle_ticker+"_output.log",'w+')
     logger.info("starting "+oracle_ticker)
     subprocess.Popen(oracle_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
     time.sleep(15)
@@ -391,7 +391,7 @@ def report_nn_tip_hashes():
             time.sleep(1)
         # save global state file
         sync_status.update({"last_updated":ticker_timestamp})
-        with open('chains_status/global_sync.json', 'w+') as fp:
+        with open(sys.path[0]+'/chains_status/global_sync.json', 'w+') as fp:
             json.dump(sync_status, fp, indent=4)
         logger.info("Saved global state data to global_sync.json")
         oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
@@ -414,7 +414,7 @@ def compare_hashes():
                 latest_file_timestamp[ticker] = int(file_timestamp)
     for ticker in latest_file_timestamp:
         latest_file = ticker+"_sync_"+str(latest_file_timestamp[ticker])+".json"
-        with open('chains_status/'+latest_file, 'r') as f:
+        with open(sys.path[0]+'/chains_status/'+latest_file, 'r') as f:
             sync_data = json.loads(f.read())
         latest_block = sync_data['last_longestchain']
         latest_hash = sync_data['last_longesthash']
@@ -470,7 +470,7 @@ def save_ac_latest_block_data():
         blocks_hashes[ticker]["blockhash"] = latest_block_hash
     string_timestamp = str(int(time.time()))
     filename = 'ac_blocks_'+string_timestamp+'.json'
-    with open('chains_status/' + filename, 'w+') as fp:
+    with open(sys.path[0]+'/chains_status/' + filename, 'w+') as fp:
         json.dump(blocks_hashes, fp, indent=4)
     logger.info("Saved data to " + filename)
 
