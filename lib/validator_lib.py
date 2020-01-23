@@ -353,47 +353,45 @@ def report_nn_tip_hashes():
         sync_data = get_sync_node_data()
         sync_node_update_time = sync_data['last_updated']
         for ticker in ac_tickers:
-            if ticker == 'last_updated':
-            else:
-                try:
-                    sync_ticker_data = sync_data[ticker]
-                    sync_ticker_block = sync_ticker_data['last_longestchain']
-                    sync_ticker_hash = sync_ticker_data['last_longesthash']
-                    ticker_rpc = globals()["assetchain_proxy_{}".format(ticker)]
-                    ticker_timestamp = int(time.time())
-                    sync_status[ticker].update({"last_updated":ticker_timestamp})
-                    get_info_result = ticker_rpc.getinfo()
+            try:
+                sync_ticker_data = sync_data[ticker]
+                sync_ticker_block = sync_ticker_data['last_longestchain']
+                sync_ticker_hash = sync_ticker_data['last_longesthash']
+                ticker_rpc = globals()["assetchain_proxy_{}".format(ticker)]
+                ticker_timestamp = int(time.time())
+                sync_status[ticker].update({"last_updated":ticker_timestamp})
+                get_info_result = ticker_rpc.getinfo()
+                sync_status[ticker].update({
+                        "blocks":get_info_result["blocks"],
+                        "longestchain":get_info_result["longestchain"]
+                    })
+                if get_info_result["blocks"] < get_info_result["longestchain"]:
+                    logger.info(colorize("Chain " + ticker + " is NOT synced."
+                                + " Blocks: " + str(get_info_result["blocks"])
+                                + " Longestchain: "+ str(get_info_result["longestchain"]),
+                                  "red"))
+                else:
+                    logger.info(colorize("Chain " + ticker + " is synced."
+                                + " Blocks: " + str(get_info_result["blocks"])
+                                + " Longestchain: " + str(get_info_result["longestchain"])
+                                + " Latest Blockhash: " + ticker_rpc.getblock(str(get_info_result["blocks"]))["hash"],
+                                  "green"))
+                    ticker_sync_block_hash = ticker_rpc.getblock(str(sync_ticker_block))["hash"]
                     sync_status[ticker].update({
-                            "blocks":get_info_result["blocks"],
-                            "longestchain":get_info_result["longestchain"]
+                            "last_longesthash":ticker_sync_block_hash,
+                            "last_longestchain":sync_ticker_block
                         })
-                    if get_info_result["blocks"] < get_info_result["longestchain"]:
-                        logger.info(colorize("Chain " + ticker + " is NOT synced."
-                                    + " Blocks: " + str(get_info_result["blocks"])
-                                    + " Longestchain: "+ str(get_info_result["longestchain"]),
-                                      "red"))
-                    else:
-                        logger.info(colorize("Chain " + ticker + " is synced."
-                                    + " Blocks: " + str(get_info_result["blocks"])
-                                    + " Longestchain: " + str(get_info_result["longestchain"])
-                                    + " Latest Blockhash: " + ticker_rpc.getblock(str(get_info_result["blocks"]))["hash"],
-                                      "green"))
-                        ticker_sync_block_hash = ticker_rpc.getblock(str(sync_ticker_block))["hash"]
-                        sync_status[ticker].update({
-                                "last_longesthash":ticker_sync_block_hash,
-                                "last_longestchain":sync_ticker_block
-                            })
-                    if ticker_sync_block_hash == sync_ticker_hash:
-                        logger.info(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] MATCHING! ", 'green'))
-                        logger.info(colorize("Hash: ["+sync_ticker_hash+"]", 'green'))
-                    else:
-                        logger.warning(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] FAILED! ", "red"))
-                        logger.warning(colorize("Sync node hash: ["+sync_ticker_hash+"]", 'red'))
-                        logger.warning(colorize("Notary node hash: ["+ticker_sync_block_hash+"]", 'red'))
-                except Exception as e:
-                    logger.warning(ticker+" error: "+str(e))
-                    logger.info(ticker+" sync data: "+str(sync_ticker_data))
-                time.sleep(1)
+                if ticker_sync_block_hash == sync_ticker_hash:
+                    logger.info(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] MATCHING! ", 'green'))
+                    logger.info(colorize("Hash: ["+sync_ticker_hash+"]", 'green'))
+                else:
+                    logger.warning(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] FAILED! ", "red"))
+                    logger.warning(colorize("Sync node hash: ["+sync_ticker_hash+"]", 'red'))
+                    logger.warning(colorize("Notary node hash: ["+ticker_sync_block_hash+"]", 'red'))
+            except Exception as e:
+                logger.warning(ticker+" error: "+str(e))
+                logger.info(ticker+" sync data: "+str(sync_ticker_data))
+            time.sleep(1)
         # save global state file
         sync_status.update({"last_updated":ticker_timestamp})
         with open(sys.path[0]+'/chains_status/global_sync.json', 'w+') as fp:
