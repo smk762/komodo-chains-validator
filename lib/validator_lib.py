@@ -400,9 +400,12 @@ def report_nn_tip_hashes():
         if this_node_update_time < sync_node_update_time:
             this_node_update_time = int(time.time())
             oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
-            this_node_update_time = int(time.time())
             oraclelib.write2oracle(oracle_rpc, stats_orcl_info['txid'], str(sync_status))
             logger.info("Global sync_status data written to oracle ["+stats_orcl_info['txid']+"]")
+        else:
+            logger.info("Global sync_status data not written to oracle, waiting for sync node update.")
+            logger.info("sync_node_update_time: "+sync_node_update_time)
+            logger.info("this_node_update_time: "+this_node_update_time)
         time.sleep(600)
     return True
 
