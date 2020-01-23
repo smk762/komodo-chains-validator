@@ -391,10 +391,10 @@ def report_nn_tip_hashes():
                         logger.warning(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] FAILED! ", "red"))
                         logger.warning(colorize("Sync node hash: ["+sync_ticker_hash+"]", 'red'))
                         logger.warning(colorize("Notary node hash: ["+ticker_sync_block_hash+"]", 'red'))
-            except Exception as e:
-                logger.warning(ticker+" error: "+str(e))
-                logger.info(ticker+" sync data: "+str(sync_ticker_data))
-            time.sleep(1)
+                except Exception as e:
+                    logger.warning(ticker+" error: "+str(e))
+                    logger.info(ticker+" sync data: "+str(sync_ticker_data))
+                time.sleep(1)
         # save global state file
         sync_status.update({"last_updated":ticker_timestamp})
         with open(sys.path[0]+'/chains_status/global_sync.json', 'w+') as fp:
