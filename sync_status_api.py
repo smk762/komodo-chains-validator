@@ -27,10 +27,17 @@ import os
 import logging
 
 logger = logging.getLogger()
-handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+
+fh = logging.FileHandler(sys.path[0]+'/sync_api.log')
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+
+handler = logging.StreamHandler()
 handler.setFormatter(formatter)
+
 logger.addHandler(handler)
+logger.addHandler(fh)
 logger.setLevel(logging.INFO)
 
 rpc_proxy = validator_lib.def_credentials(validator_lib.oracle_ticker)
@@ -91,7 +98,9 @@ def get_hashtips():
             if samples['result'] == 'success':
                 if len(samples['samples'][0]['data']) > 0:
                     sample_data = json.loads(samples['samples'][0]['data'][0].replace("\'", "\""))
-                    for ticker in sample_data:
+                    ticker_names = list(sample_data.keys())
+                    ticker_names.sort()
+                    for ticker in ticker_names:
                         if ticker == 'last_updated':
                             if 'last_updated' not in hashtips:
                                 hashtips.update({'last_updated':{}})
