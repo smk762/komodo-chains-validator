@@ -348,13 +348,12 @@ def report_nn_tip_hashes():
     for ticker in ac_tickers:
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
         sync_status.update({ticker:{}})
-    sync_data = get_sync_node_data()
     this_node_update_time = 0
     while True:
-
+        sync_data = get_sync_node_data()
+        sync_node_update_time = sync_data['last_updated']
         for ticker in ac_tickers:
             if ticker == 'last_updated':
-                sync_node_update_time = ticker['last_updated']
             else:
                 try:
                     sync_ticker_data = sync_data[ticker]
