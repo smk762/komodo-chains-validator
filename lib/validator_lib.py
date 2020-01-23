@@ -404,8 +404,8 @@ def report_nn_tip_hashes():
             logger.info("Global sync_status data written to oracle ["+stats_orcl_info['txid']+"]")
         else:
             logger.info("Global sync_status data not written to oracle, waiting for sync node update.")
-            logger.info("sync_node_update_time: "+sync_node_update_time)
-            logger.info("this_node_update_time: "+this_node_update_time)
+            logger.info("sync_node_update_time: "+str(sync_node_update_time))
+            logger.info("this_node_update_time: "+str(this_node_update_time))
         time.sleep(600)
     return True
 
