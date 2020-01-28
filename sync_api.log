@@ -1,0 +1,168 @@
+22-Jan-20 15:07:42 INFO     Started server process [20695]
+22-Jan-20 15:07:42 INFO     Waiting for application startup.
+22-Jan-20 15:07:42 INFO     Application startup complete.
+22-Jan-20 15:07:42 INFO     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+22-Jan-20 15:07:52 INFO     Shutting down
+22-Jan-20 15:07:52 INFO     Waiting for application shutdown.
+22-Jan-20 15:07:52 INFO     Application shutdown complete.
+22-Jan-20 15:07:52 INFO     Finished server process [20695]
+22-Jan-20 15:07:52 INFO     Started server process [20734]
+22-Jan-20 15:07:52 INFO     Waiting for application startup.
+22-Jan-20 15:07:52 INFO     Application startup complete.
+22-Jan-20 15:07:52 INFO     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+23-Jan-20 07:01:19 ERROR    Exception in ASGI application
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/uvicorn/protocols/http/httptools_impl.py", line 385, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+  File "/usr/local/lib/python3.6/dist-packages/uvicorn/middleware/proxy_headers.py", line 45, in __call__
+    return await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/fastapi/applications.py", line 142, in __call__
+    await super().__call__(scope, receive, send)  # pragma: no cover
+  File "/usr/local/lib/python3.6/dist-packages/starlette/applications.py", line 134, in __call__
+    await self.error_middleware(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/middleware/errors.py", line 178, in __call__
+    raise exc from None
+  File "/usr/local/lib/python3.6/dist-packages/starlette/middleware/errors.py", line 156, in __call__
+    await self.app(scope, receive, _send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/exceptions.py", line 73, in __call__
+    raise exc from None
+  File "/usr/local/lib/python3.6/dist-packages/starlette/exceptions.py", line 62, in __call__
+    await self.app(scope, receive, sender)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 590, in __call__
+    await route(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 208, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 41, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.6/dist-packages/fastapi/routing.py", line 133, in app
+    raw_response = await dependant.call(**values)
+  File "./sync_status_api.py", line 154, in show_hashtips
+    return get_hashtips()
+  File "./sync_status_api.py", line 92, in get_hashtips
+    hashtip_oracles = get_hashtip_oracles()
+  File "./sync_status_api.py", line 49, in get_hashtip_oracles
+    oracles_list = rpc_proxy.oracleslist()
+  File "/usr/local/lib/python3.6/dist-packages/slickrpc/rpc.py", line 72, in call
+    conn.perform()
+pycurl.error: (7, 'Failed to connect to 127.0.0.1 port 54579: Connection refused')
+23-Jan-20 07:02:17 ERROR    Exception in ASGI application
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/uvicorn/protocols/http/httptools_impl.py", line 385, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+  File "/usr/local/lib/python3.6/dist-packages/uvicorn/middleware/proxy_headers.py", line 45, in __call__
+    return await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/fastapi/applications.py", line 142, in __call__
+    await super().__call__(scope, receive, send)  # pragma: no cover
+  File "/usr/local/lib/python3.6/dist-packages/starlette/applications.py", line 134, in __call__
+    await self.error_middleware(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/middleware/errors.py", line 178, in __call__
+    raise exc from None
+  File "/usr/local/lib/python3.6/dist-packages/starlette/middleware/errors.py", line 156, in __call__
+    await self.app(scope, receive, _send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/exceptions.py", line 73, in __call__
+    raise exc from None
+  File "/usr/local/lib/python3.6/dist-packages/starlette/exceptions.py", line 62, in __call__
+    await self.app(scope, receive, sender)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 590, in __call__
+    await route(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 208, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 41, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.6/dist-packages/fastapi/routing.py", line 133, in app
+    raw_response = await dependant.call(**values)
+  File "./sync_status_api.py", line 154, in show_hashtips
+    return get_hashtips()
+  File "./sync_status_api.py", line 92, in get_hashtips
+    hashtip_oracles = get_hashtip_oracles()
+  File "./sync_status_api.py", line 49, in get_hashtip_oracles
+    oracles_list = rpc_proxy.oracleslist()
+  File "/usr/local/lib/python3.6/dist-packages/slickrpc/rpc.py", line 72, in call
+    conn.perform()
+pycurl.error: (7, 'Failed to connect to 127.0.0.1 port 54579: Connection refused')
+23-Jan-20 07:02:41 INFO     Shutting down
+23-Jan-20 07:02:41 INFO     Waiting for application shutdown.
+23-Jan-20 07:02:41 INFO     Application shutdown complete.
+23-Jan-20 07:02:41 INFO     Finished server process [20734]
+23-Jan-20 07:03:39 INFO     Started server process [851]
+23-Jan-20 07:03:39 INFO     Waiting for application startup.
+23-Jan-20 07:03:39 INFO     Application startup complete.
+23-Jan-20 07:03:39 INFO     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+23-Jan-20 07:03:48 ERROR    Exception in ASGI application
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/uvicorn/protocols/http/httptools_impl.py", line 385, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+  File "/usr/local/lib/python3.6/dist-packages/uvicorn/middleware/proxy_headers.py", line 45, in __call__
+    return await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/fastapi/applications.py", line 142, in __call__
+    await super().__call__(scope, receive, send)  # pragma: no cover
+  File "/usr/local/lib/python3.6/dist-packages/starlette/applications.py", line 134, in __call__
+    await self.error_middleware(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/middleware/errors.py", line 178, in __call__
+    raise exc from None
+  File "/usr/local/lib/python3.6/dist-packages/starlette/middleware/errors.py", line 156, in __call__
+    await self.app(scope, receive, _send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/exceptions.py", line 73, in __call__
+    raise exc from None
+  File "/usr/local/lib/python3.6/dist-packages/starlette/exceptions.py", line 62, in __call__
+    await self.app(scope, receive, sender)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 590, in __call__
+    await route(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 208, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 41, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.6/dist-packages/fastapi/routing.py", line 133, in app
+    raw_response = await dependant.call(**values)
+  File "./sync_status_api.py", line 154, in show_hashtips
+    return get_hashtips()
+  File "./sync_status_api.py", line 92, in get_hashtips
+    hashtip_oracles = get_hashtip_oracles()
+  File "./sync_status_api.py", line 49, in get_hashtip_oracles
+    oracles_list = rpc_proxy.oracleslist()
+  File "/usr/local/lib/python3.6/dist-packages/slickrpc/rpc.py", line 72, in call
+    conn.perform()
+pycurl.error: (7, 'Failed to connect to 127.0.0.1 port 54579: Connection refused')
+23-Jan-20 07:03:51 ERROR    Exception in ASGI application
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/uvicorn/protocols/http/httptools_impl.py", line 385, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+  File "/usr/local/lib/python3.6/dist-packages/uvicorn/middleware/proxy_headers.py", line 45, in __call__
+    return await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/fastapi/applications.py", line 142, in __call__
+    await super().__call__(scope, receive, send)  # pragma: no cover
+  File "/usr/local/lib/python3.6/dist-packages/starlette/applications.py", line 134, in __call__
+    await self.error_middleware(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/middleware/errors.py", line 178, in __call__
+    raise exc from None
+  File "/usr/local/lib/python3.6/dist-packages/starlette/middleware/errors.py", line 156, in __call__
+    await self.app(scope, receive, _send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/exceptions.py", line 73, in __call__
+    raise exc from None
+  File "/usr/local/lib/python3.6/dist-packages/starlette/exceptions.py", line 62, in __call__
+    await self.app(scope, receive, sender)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 590, in __call__
+    await route(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 208, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.6/dist-packages/starlette/routing.py", line 41, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.6/dist-packages/fastapi/routing.py", line 133, in app
+    raw_response = await dependant.call(**values)
+  File "./sync_status_api.py", line 154, in show_hashtips
+    return get_hashtips()
+  File "./sync_status_api.py", line 92, in get_hashtips
+    hashtip_oracles = get_hashtip_oracles()
+  File "./sync_status_api.py", line 49, in get_hashtip_oracles
+    oracles_list = rpc_proxy.oracleslist()
+  File "/usr/local/lib/python3.6/dist-packages/slickrpc/rpc.py", line 75, in call
+    raise RpcException(resp['error'], method, params)
+slickrpc.exc.RpcInWarmUp: oracleslist: Rescanning... (code -28)
+23-Jan-20 07:09:56 INFO     Shutting down
+23-Jan-20 07:09:57 INFO     Waiting for application shutdown.
+23-Jan-20 07:09:57 INFO     Application shutdown complete.
+23-Jan-20 07:09:57 INFO     Finished server process [851]
+23-Jan-20 07:09:57 INFO     Started server process [1547]
+23-Jan-20 07:09:57 INFO     Waiting for application startup.
+23-Jan-20 07:09:57 INFO     Application startup complete.
+23-Jan-20 07:09:57 INFO     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
