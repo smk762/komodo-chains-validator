@@ -5,3 +5,4 @@ __pycache__
 *_7776
 komodod
 komodo-cli
+*.log
