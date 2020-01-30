@@ -47,4 +47,4 @@ WantedBy=multi-user.target
 - Start the service with `sudo systemctl start kmd_sync_report.service`
 - Check its status with `sudo systemctl status kmd_sync_report.service`
 - Set it to run automatically on reboot - `sudo systemctl enable kmd_sync_report.service`
-y
+
