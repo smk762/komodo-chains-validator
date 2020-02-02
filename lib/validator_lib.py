@@ -314,7 +314,7 @@ def create_node_oracle(oracle_ticker):
             get_info_pubkey = get_info['pubkey']
             get_info_balance = get_info['balance']
             if get_info_pubkey == local_pubkey:
-                if get_info_balance < 10005:
+                if get_info_balance < 10:
                     logger.warning("Oracle creation aborted: "+oracle_ticker+" has insufficient funds (10005 required)")
                     logger.warning("Ask @smk762#7640 on Discord to send some.")
                     sys.exit()
