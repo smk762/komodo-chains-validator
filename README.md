@@ -22,7 +22,8 @@ komodod -ac_name=STATSORCL -ac_supply=100000000 -ac_reward=10000000000 -ac_stake
 ```
 - Import your Notary Node private key - `komodo-cli -ac_name=STATSORCL importprivkey [YOUR_PRIVATE_KEY]`
 - Now stop the chain - `komodo-cli -ac_name=STATSORCL stop`
-- Then create a file - `nano ~/komodo-chains-validator/config/pubkey.txt` 
+- Next create a config folder - `mkdir config`
+- Then create a file for your pubkey - `nano ~/komodo-chains-validator/config/pubkey.txt` 
 - And enter your pubkey (just the pubkey, nothing else),then save the file and exit.
 - Last step is to setup a service for the nn_report_hash.py script, so it will restart on reboot, and run in the background.
 - Create a file with ` sudo nano /lib/systemd/system/kmd_sync_report.service`, then populate it as below:
