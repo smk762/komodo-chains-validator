@@ -16,9 +16,9 @@ To participate as a notary node, follow the instructions below:
 - Clone this repo - `git clone https://github.com/smk762/komodo-chains-validator/`
 - Go to the repo folder - `cd komodo-chains-validator`
 - Install pip reqs - `pip3 install -r requirements.txt`
-- Start the STATSORCL chain with the following parameters: 
+- Start the STATSORCL chain with the following parameters (insert your pubkey!): 
 ```
-komodod -ac_name=STATSORCL -ac_supply=100000000 -ac_reward=10000000000 -ac_staked=99 -ac_cc=762 -ac_halving=762000 -addnode=116.203.120.91 -addnode=116.203.120.163
+komodod -ac_name=STATSORCL -ac_supply=100000000 -ac_reward=10000000000 -ac_staked=99 -ac_cc=762 -ac_halving=762000 pubkey=[YOUR PUBKEY] -addnode=116.203.120.91 -addnode=116.203.120.163
 ```
 - Import your Notary Node private key - `komodo-cli -ac_name=STATSORCL importprivkey [YOUR_PRIVATE_KEY]`
 - Now stop the chain - `komodo-cli -ac_name=STATSORCL stop`
