@@ -77,23 +77,26 @@ def def_credentials(chain):
         coin_config_file = '~/.komodo/'+chain+'/'+chain+'.conf'
     logger.info("Loading "+coin_config_file)
     try:
-        with open(coin_config_file, 'r') as f:
-            for line in f:
-                logger.info(line)
-                l = line.rstrip()
-                if re.search('rpcuser', l):
-                    rpcuser = l.replace('rpcuser=', '')
-                elif re.search('rpcpassword', l):
-                    rpcpassword = l.replace('rpcpassword=', '')
-                elif re.search('rpcport', l):
-                    rpcport = l.replace('rpcport=', '')
-        if len(rpcport) == 0:
-            if chain == 'KMD':
-                rpcport = 7771
-            else:
-                logger.info("rpcport not in conf file, exiting")
-                logger.info("check "+coin_config_file)
-                exit(1)
+        if os.path.isfile(coin_config_file):
+            with open(coin_config_file, 'r') as f:
+                for line in f:
+                    logger.info(line)
+                    l = line.rstrip()
+                    if re.search('rpcuser', l):
+                         rpcuser = l.replace('rpcuser=', '')
+                    elif re.search('rpcpassword', l):
+                        rpcpassword = l.replace('rpcpassword=', '')
+                    elif re.search('rpcport', l):
+                        rpcport = l.replace('rpcport=', '')
+            if len(rpcport) == 0:
+                if chain == 'KMD':
+                    rpcport = 7771
+                else:
+                    logger.info("rpcport not in conf file, exiting")
+                    logger.info("check "+coin_config_file)
+                    exit(1)
+         else:
+            logger.debug(coin_config_file+" is not a file!")
     except Exception as e:
         logger.debug("chain: "+chain)
         logger.debug("error: "+str(e))
