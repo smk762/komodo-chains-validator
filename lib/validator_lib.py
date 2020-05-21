@@ -83,7 +83,7 @@ def def_credentials(chain):
                     logger.info(line)
                     l = line.rstrip()
                     if re.search('rpcuser', l):
-                         rpcuser = l.replace('rpcuser=', '')
+                        rpcuser = l.replace('rpcuser=', '')
                     elif re.search('rpcpassword', l):
                         rpcpassword = l.replace('rpcpassword=', '')
                     elif re.search('rpcport', l):
@@ -95,7 +95,7 @@ def def_credentials(chain):
                     logger.info("rpcport not in conf file, exiting")
                     logger.info("check "+coin_config_file)
                     exit(1)
-         else:
+        else:
             logger.debug(coin_config_file+" is not a file!")
     except Exception as e:
         logger.debug("chain: "+chain)
