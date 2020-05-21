@@ -65,7 +65,6 @@ def colorize(string, color):
     else:
         return colors[color] + str(string) + '\033[0m'
 
-# Set RPC proxy - LINUX ONLY!
 def def_credentials(chain):
     rpcport = '';
     operating_system = platform.system()
@@ -79,9 +78,11 @@ def def_credentials(chain):
     if chain in dpow_tickers:
         logger.info(chain+" in "+str(dpow_tickers))
         if 'conf_path' in dpow_coins_info[chain]:
+            logger.info(chain+" in "+str(dpow_coins_info[chain]['conf_path']))
+            logger.info(chain+" in "+str(dpow_coins_info[chain]['conf_path'].replace("~",os.environ['HOME'])))
             coin_config_file = str(dpow_coins_info[chain]['conf_path'].replace("~",os.environ['HOME']))
         else:
-            logger.debug("Conf path not in dpow info for "+chain)
+            logger.warning("Conf path not in dpow info for "+chain)
     elif chain == 'KMD':
         coin_config_file = str(ac_dir + '/komodo.conf')
     else:
@@ -90,7 +91,7 @@ def def_credentials(chain):
     if os.path.isfile(coin_config_file):
         with open(coin_config_file, 'r') as f:
             for line in f:
-                logger.debug(line)
+                logger.warning(line)
                 l = line.rstrip()
                 if re.search('rpcuser', l):
                     rpcuser = l.replace('rpcuser=', '')
@@ -111,7 +112,6 @@ def def_credentials(chain):
         errmsg = coin_config_file+" does not exist! Please confirm "+str(chain)+" daemon is installed"
         print(colorize(errmsg, 'red'))
         exit(1)
-        
 
 
 notary_pubkeys =  {
