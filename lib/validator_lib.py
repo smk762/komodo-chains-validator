@@ -73,6 +73,7 @@ def def_credentials(chain):
             coin_config_file = str(dpow_tickers[chain]['conf_path'])
         else:
             coin_config_file = '~/.komodo/'+chain+'/'+chain+'.conf'
+    logger.info("Loading "+coin_config_file)
     try:
         with open(coin_config_file, 'r') as f:
             for line in f:
