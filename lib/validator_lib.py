@@ -77,9 +77,9 @@ def def_credentials(chain):
     logger.info(ac_dir)
     if chain in dpow_tickers:
         logger.info(chain+" in "+str(dpow_tickers))
-        if 'conf_path' in dpow_coins_info[chain]:
-            logger.info(chain+" in "+str(dpow_coins_info[chain]['conf_path']))
-            logger.info(chain+" in "+str(dpow_coins_info[chain]['conf_path'].replace("~",os.environ['HOME'])))
+        if 'conf_path' in dpow_coins_info[chain]['dpow']:
+            logger.info(chain+" in "+str(dpow_coins_info[chain]['dpow']['conf_path']))
+            logger.info(chain+" in "+str(dpow_coins_info[chain]['dpow']['conf_path'].replace("~",os.environ['HOME'])))
             coin_config_file = str(dpow_coins_info[chain]['conf_path'].replace("~",os.environ['HOME']))
         else:
             logger.warning("Conf path not in dpow info for "+chain)
