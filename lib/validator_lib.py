@@ -91,13 +91,12 @@ def def_credentials(chain):
     if not os.path.isfile(coin_config_file):
         conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
         path_file = os.path.split(os.path.abspath(conf_filepath))
-        conf_path = path_file[0]
         conf_file = path_file[1]
-        print(colorize('~/komodo-chains-validator/confs/'+conf_file, 'red'))
+        print(colorize('~/komodo-chains-validator/confs/'+conf_file, 'green'))
         print(colorize(conf_filepath, 'red'))
         if os.path.isfile('~/komodo-chains-validator/confs/'+conf_file):
-            print(colorize("is file", 'red'))
-            shutil.copyfile('~/komodo-chains-validator/confs/'+conf_file, conf_filepath)
+            print(colorize("is file", 'green'))
+            shutil.copyfile('~/komodo-chains-validator/confs/'+conf_file, coin_config_file)
     if os.path.isfile(coin_config_file):        
         logger.info("is file")
         with open(coin_config_file, 'r') as f:
