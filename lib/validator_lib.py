@@ -274,7 +274,8 @@ def clean_chain_data(ticker):
 def restart_ticker(ticker):
     try:
         logger.info("restarting "+ticker)
-        ticker_launch = dpow_coins_info[ticker]['dpow']['launch_params'].split(' ')
+        ticker_launch = dpow_coins_info[ticker]['dpow']['launch_params'] \
+                        .replace("~",os.environ['HOME']).split(' ')
         logger.info("launching with "+str(ticker_launch))
         ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
         logger.info("outputing to "+ticker_output)        
