@@ -7,3 +7,4 @@ komodod
 komodo-cli
 pubkey.txt
 .env
+*.log
