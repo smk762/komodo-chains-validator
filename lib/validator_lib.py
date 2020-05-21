@@ -14,6 +14,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+r = requests.get('http://notary.earth:8762/info/coins/?dpow_active=1')
+
+dpow_coins_info = r.json()['results'][0]
+dpow_tickers = list(dpow_coins_info.keys())
+logger.info("dpow_tickers: "+str(dpow_tickers))
 # create app folders
 app_subfolders = ['chains_status', 'ticker_output', 'config']
 
@@ -109,10 +114,6 @@ def def_credentials(chain):
         exit(1)
         
 
-r = requests.get('http://notary.earth:8762/info/coins/?dpow_active=1')
-
-dpow_coins_info = r.json()['results'][0]
-dpow_tickers = list(dpow_coins_info.keys())
 
 notary_pubkeys =  {
     "madmax_NA": "0237e0d3268cebfa235958808db1efc20cc43b31100813b1f3e15cc5aa647ad2c3", 
