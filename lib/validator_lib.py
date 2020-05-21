@@ -75,7 +75,9 @@ def def_credentials(chain):
         ac_dir = os.environ['HOME'] + '/.komodo'
     elif operating_system == 'Windows':
         ac_dir = '%s/komodo/' % os.environ['APPDATA']
+    logger.info(ac_dir)
     if chain in dpow_tickers:
+        logger.info(chain+" in "+str(dpow_tickers))
         if 'conf_path' in dpow_tickers[chain]:
             coin_config_file = str(dpow_tickers[chain]['conf_path'].replace("~",os.environ['HOME']))
         else:
@@ -268,21 +270,18 @@ def clean_chain_data(ticker):
     os.makedirs(conf_path)
     shutil.copyfile('~/komodo-chains-validator/confs/'+conf_file, conf_filepath)
 
-
 def restart_ticker(ticker):
     try:
         logger.info("restarting "+ticker)
         ticker_launch = dpow_coins_info[ticker]['dpow']['launch_params'] \
                         .replace("~",os.environ['HOME']).split(' ')
-        logger.info("launching with "+str(ticker_launch))
         ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
-        logger.info("outputing to "+sys.path[0]+'/ticker_output/'+ticker+"_output.log")
         subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
         logger.info("sleeping 30 sec")
         time.sleep(30)
         logger.info("Setting RPC for "+ticker)
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
-        logger.debug(globals())
+        logger.debug("globals: "+str(globals()))
     except Exception as e:
         logger.debug("error restarting ticker "+ticker+": "+str(e))
 
