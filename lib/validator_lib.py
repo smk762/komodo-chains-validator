@@ -74,7 +74,7 @@ def def_credentials(chain):
         else:
             logger.debug("Conf path not in dpow info for "+chain)
     else:
-        coin_config_file = '~/.komodo/'+chain+'/'+chain+'.conf'
+        coin_config_file =  os.environ['HOME']+'/.komodo/'+chain+'/'+chain+'.conf'
     logger.info("Loading "+coin_config_file)
     try:
         if os.path.isfile(coin_config_file):
