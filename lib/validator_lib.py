@@ -119,6 +119,8 @@ def def_credentials(chain):
         print(colorize(errmsg, 'red'))
         exit(1)
 
+for ticker in dpow_tickers:
+    globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
 
 notary_pubkeys =  {
     "madmax_NA": "0237e0d3268cebfa235958808db1efc20cc43b31100813b1f3e15cc5aa647ad2c3", 
