@@ -78,8 +78,6 @@ def def_credentials(chain):
     if chain in dpow_tickers:
         logger.info(chain+" in "+str(dpow_tickers))
         if 'conf_path' in dpow_coins_info[chain]['dpow']:
-            logger.info(chain+" in "+str(dpow_coins_info[chain]['dpow']['conf_path']))
-            logger.info(chain+" in "+str(dpow_coins_info[chain]['dpow']['conf_path'].replace("~",os.environ['HOME'])))
             coin_config_file = str(dpow_coins_info[chain]['conf_path'].replace("~",os.environ['HOME']))
         else:
             logger.warning("Conf path not in dpow info for "+chain)
@@ -87,12 +85,13 @@ def def_credentials(chain):
         coin_config_file = str(ac_dir + '/komodo.conf')
     else:
         coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
-    logger.info(coin_config_file)
+    logger.info("chain_config: "+coin_config_file)
     if os.path.isfile(coin_config_file):
+        logger.info("is file")
         with open(coin_config_file, 'r') as f:
             for line in f:
-                logger.warning(line)
                 l = line.rstrip()
+                logger.warning(l)
                 if re.search('rpcuser', l):
                     rpcuser = l.replace('rpcuser=', '')
                 elif re.search('rpcpassword', l):
