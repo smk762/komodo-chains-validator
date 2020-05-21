@@ -79,6 +79,7 @@ def def_credentials(chain):
     try:
         with open(coin_config_file, 'r') as f:
             for line in f:
+                logger.info(line)
                 l = line.rstrip()
                 if re.search('rpcuser', l):
                     rpcuser = l.replace('rpcuser=', '')
