@@ -6,3 +6,5 @@ __pycache__
 komodod
 komodo-cli
 pubkey.txt
+.env
+*.log
