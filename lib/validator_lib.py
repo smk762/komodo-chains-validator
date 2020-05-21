@@ -79,6 +79,9 @@ def def_credentials(chain):
     try:
         if os.path.isfile(coin_config_file):
             with open(coin_config_file, 'r') as f:
+                
+                logger.info(f.text)
+                logger.info(f)
                 logger.info(f.read())
                 for line in f:
                     logger.info(line)
