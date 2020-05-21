@@ -77,7 +77,7 @@ def def_credentials(chain):
         ac_dir = '%s/komodo/' % os.environ['APPDATA']
     if chain in dpow_tickers:
         if 'conf_path' in dpow_tickers[chain]:
-            coin_config_file = str(dpow_tickers[chain]['conf_path'].replace("~",os.environ['HOME'])
+            coin_config_file = str(dpow_tickers[chain]['conf_path'].replace("~",os.environ['HOME']))
         else:
             logger.debug("Conf path not in dpow info for "+chain)
     elif chain == 'KMD':
