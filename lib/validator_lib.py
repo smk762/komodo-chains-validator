@@ -2,7 +2,7 @@ from slickrpc import Proxy
 import time
 import subprocess
 import platform
-#import requests
+import requests
 import os
 import re
 import sys
@@ -14,12 +14,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# create app folders
 app_subfolders = ['chains_status', 'ticker_output', 'config']
 
 for folder in app_subfolders:
     if not os.path.exists(sys.path[0]+"/"+folder):
         os.makedirs(sys.path[0]+"/"+folder)
 
+# Set pubkey for oracle chain
 if not os.path.isfile(sys.path[0]+'/config/pubkey.txt'):
     with open(sys.path[0]+'/config/pubkey.txt', 'w+') as fp:
         fp.write("")
@@ -40,8 +42,13 @@ if local_pubkey == "":
     logger.warning("Then ask @smk762#7640 on Discord to send "+oracle_ticker+" funds to cover oracle fees.")
     sys.exit()
 
-def colorize(string, color):
+# Oracle chain launch params
+oracle_ticker = "STATSORCL"
+oracle_launch = ['komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
+                '-ac_reward=10000000000', '-ac_staked=99', '-ac_cc=762',
+                '-ac_halving=762000', '-addnode=116.203.120.91', '-addnode=116.203.120.163', '-pubkey='+local_pubkey]
 
+def colorize(string, color):
     colors = {
         'blue': '\033[94m',
         'cyan': '\033[96m',
@@ -58,46 +65,40 @@ def colorize(string, color):
     else:
         return colors[color] + str(string) + '\033[0m'
 
+# Set RPC proxy - LINUX ONLY!
 def def_credentials(chain):
     rpcport = ''
-    ac_dir = ''
-    operating_system = platform.system()
-    if operating_system == 'Darwin':
-        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
-    elif operating_system == 'Linux':
-        ac_dir = os.environ['HOME'] + '/.komodo'
-    elif operating_system == 'Win64' or operating_system == 'Windows':
-        ac_dir = '%s/komodo/' % os.environ['APPDATA']
-    if chain == 'KMD':
-        coin_config_file = str(ac_dir + '/komodo.conf')
-    else:
-        coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
-    with open(coin_config_file, 'r') as f:
-        for line in f:
-            l = line.rstrip()
-            if re.search('rpcuser', l):
-                rpcuser = l.replace('rpcuser=', '')
-            elif re.search('rpcpassword', l):
-                rpcpassword = l.replace('rpcpassword=', '')
-            elif re.search('rpcport', l):
-                rpcport = l.replace('rpcport=', '')
-    if len(rpcport) == 0:
-        if chain == 'KMD':
-            rpcport = 7771
-        else:
-            logger.info("rpcport not in conf file, exiting")
-            logger.info("check "+coin_config_file)
-            exit(1)
+    if chain in dpow_tickers:
+        if 'conf_path' in dpow_tickers[chain]:
+            coin_config_file = str(dpow_tickers[chain]['conf_path'])
+    try:
+        with open(coin_config_file, 'r') as f:
+            for line in f:
+                l = line.rstrip()
+                if re.search('rpcuser', l):
+                    rpcuser = l.replace('rpcuser=', '')
+                elif re.search('rpcpassword', l):
+                    rpcpassword = l.replace('rpcpassword=', '')
+                elif re.search('rpcport', l):
+                    rpcport = l.replace('rpcport=', '')
+        if len(rpcport) == 0:
+            if chain == 'KMD':
+                rpcport = 7771
+            else:
+                logger.info("rpcport not in conf file, exiting")
+                logger.info("check "+coin_config_file)
+                exit(1)
+    except Exception as e:
+        logger.debug("conf_path: "+coin_config_file)
+        logger.debug("error: "+str(e))
+
 
     return Proxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport)))
 
-ac_tickers = ["REVS", "SUPERNET", "DEX", "PANGEA", "JUMBLR", "BET", "CRYPTO", "HODL",
-              "MSHARK", "BOTS", "MGW", "COQUICASH", "KV", "MESH", "AXO", "ETOMIC",
-              "BTCH", "NINJA", "OOT", "ZILLA", "RFOX", "SEC", "CCL", "PIRATE", "PGT", "KSB",
-              "OUR", "ILN", "RICK", "MORTY", "KOIN", "ZEXO", "K64", "THC", "WLC21"]
-#ac_tickers = ["ILN", "RICK", "MORTY"]
-#ac_tickers = ["ILN", "RICK", "MORTY", "HUSH3"]
-exclude_tickers = ['WLC']
+r = requests.get('http://notary.earth:8762/info/coins/?dpow_active=1')
+
+dpow_coins_info = r.json()['results'][0]
+dpow_tickers = list(dpow_coins_info.keys())
 
 notary_pubkeys =  {
     "madmax_NA": "0237e0d3268cebfa235958808db1efc20cc43b31100813b1f3e15cc5aa647ad2c3", 
@@ -181,16 +182,16 @@ else:
 def sim_chains_start_and_sync():
     launch_stats_oracle(oracle_ticker)
     stats_orcl_info = get_node_oracle(oracle_ticker)
-    # start and creating a proxy for each assetchain
-    for ticker in ac_tickers:
+    # start with creating a proxy for each assetchain
+    for ticker in dpow_tickers:
         # 30 sec wait during restart for getting rpc credentials
-        # 30 x approx. 40 chains = 20 min to start
+        # 30 sec * approx. 40 chains = 20 min to start
         restart_ticker(ticker)
         if ticker not in sync_status:
             sync_status.update({ticker:{}})
     while True:
         update_oracle = False
-        for ticker in ac_tickers:
+        for ticker in dpow_tickers:
             try:
                 ticker_rpc = globals()["assetchain_proxy_{}".format(ticker)]
                 ticker_timestamp = int(time.time())
@@ -244,25 +245,26 @@ def clean_chain_data(ticker):
     stop_result = globals()["assetchain_proxy_{}".format(ticker)].stop()
     logger.info(ticker + " stopped!")
     time.sleep(30)
-    ac_dir = str(kmd_dir + '/' + ticker + '/')
-    shutil.rmtree(ac_dir)
-    logger.info(ac_dir+" deleted")
+    conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
+    path_file = os.path.split(os.path.abspath(conf_filepath))
+    conf_path = path_file[0]
+    conf_file = path_file[1]
+    shutil.rmtree(conf_path)
+    logger.info(conf_path+" deleted")
+    # some 3P chains do not create a conf, will need to do this manually by copying ./confs/{chain}.conf into required folder.
+    os.makedirs(conf_path)
+    shutil.copyfile('~/komodo-chains-validator/confs/'+conf_file, conf_filepath)
 
-def restart_ticker(ticker):        
-    ticker_launch = ''
-    with open(sys.path[0]+'/assetchains.old') as fp:
-        line = fp.readline()
-        while line:
-            if line.find(ticker) > 0:
-                ticker_launch = line.strip().split(" ")[:-1]
-                break
-            line = fp.readline()
-    if ticker_launch != '':
+
+def restart_ticker(ticker):
+    try:
+        ticker_launch = dpow_coins_info[ticker]['dpow']['launch_params']    
         ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
         logger.info("starting "+ticker)
         subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
         time.sleep(30)
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
+
 
 def launch_stats_oracle(oracle_ticker):
     ticker_output = open(sys.path[0]+'/ticker_output/'+oracle_ticker+"_output.log",'w+')
@@ -280,7 +282,7 @@ def get_node_oracle(oracle_ticker):
         logger.info("Saved oracle info data to "+sys.path[0]+"/config/oracle.json")
     with open(sys.path[0]+'/config/oracle.json', 'r') as fp:
         orcl_info = json.loads(fp.read())
-    return orcl_info    
+    return orcl_info
 
 def get_local_node_name():
     node_name = ''
@@ -308,7 +310,7 @@ def create_node_oracle(oracle_ticker):
             get_info_pubkey = get_info['pubkey']
             get_info_balance = get_info['balance']
             if get_info_pubkey == local_pubkey:
-                if get_info_balance < 10005:
+                if get_info_balance < 10:
                     logger.warning("Oracle creation aborted: "+oracle_ticker+" has insufficient funds (10005 required)")
                     logger.warning("Ask @smk762#7640 on Discord to send some.")
                     sys.exit()
@@ -345,23 +347,21 @@ def get_sync_node_data():
 def report_nn_tip_hashes():
     launch_stats_oracle(oracle_ticker)
     stats_orcl_info = get_node_oracle(oracle_ticker)
-    # start and creating a proxy for each assetchain
-    for ticker in ac_tickers:
+    # start with creating a proxy for each assetchain
+    for ticker in dpow_tickers:
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
         sync_status.update({ticker:{}})
     this_node_update_time = 0
     while True:
+        # read sync node data
         sync_data = get_sync_node_data()
         sync_node_update_time = sync_data['last_updated']
-        for ticker in ac_tickers:
+        for ticker in dpow_tickers:
             try:
+                # compare sync node hash to local hash
                 sync_ticker_data = sync_data[ticker]
-                try:
-                    sync_ticker_block = sync_ticker_data['last_longestchain']
-                    sync_ticker_hash = sync_ticker_data['last_longesthash']
-                except:
-                    sync_ticker_block = 0
-                    sync_ticker_hash = ''
+                sync_ticker_block = sync_ticker_data['last_longestchain']
+                sync_ticker_hash = sync_ticker_data['last_longesthash']
                 ticker_rpc = globals()["assetchain_proxy_{}".format(ticker)]
                 ticker_timestamp = int(time.time())
                 sync_status[ticker].update({"last_updated":ticker_timestamp})
@@ -375,7 +375,6 @@ def report_nn_tip_hashes():
                                 + " Blocks: " + str(get_info_result["blocks"])
                                 + " Longestchain: "+ str(get_info_result["longestchain"]),
                                   "red"))
-                    ticker_sync_block_hash = ''
                 else:
                     logger.info(colorize("Chain " + ticker + " is synced."
                                 + " Blocks: " + str(get_info_result["blocks"])
@@ -388,9 +387,11 @@ def report_nn_tip_hashes():
                             "last_longestchain":sync_ticker_block
                         })
                 if ticker_sync_block_hash == sync_ticker_hash:
+                    # all good
                     logger.info(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] MATCHING! ", 'green'))
                     logger.info(colorize("Hash: ["+sync_ticker_hash+"]", 'green'))
                 else:
+                    # possible fork
                     logger.warning(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] FAILED! ", "red"))
                     logger.warning(colorize("Sync node hash: ["+sync_ticker_hash+"]", 'red'))
                     logger.warning(colorize("Notary node hash: ["+ticker_sync_block_hash+"]", 'red'))
@@ -403,6 +404,7 @@ def report_nn_tip_hashes():
         with open(sys.path[0]+'/chains_status/global_sync.json', 'w+') as fp:
             json.dump(sync_status, fp, indent=4)
         logger.info("Saved global state data to global_sync.json")
+        # write notary hashes to oracle
         if this_node_update_time < sync_node_update_time:
             this_node_update_time = int(time.time())
             oracle_rpc = globals()["assetchain_proxy_{}".format(oracle_ticker)]
@@ -415,87 +417,3 @@ def report_nn_tip_hashes():
         time.sleep(600)
     return True
 
-## REVIEW FUNCTS BELOW FOR REMOVAL 
-def compare_hashes():
-    sync_files = [ x[:-5] for x in os.listdir('chains_status/') if x.endswith("json") ]
-    latest_file_timestamp = {}
-    for file in sync_files:
-        if file.split("_")[0] != 'global':
-            ticker = file.split("_")[0]
-            file_timestamp = file.split("_")[2]
-            if ticker not in latest_file_timestamp:
-                latest_file_timestamp[ticker] = 0
-            elif latest_file_timestamp[ticker] < int(file_timestamp):
-                latest_file_timestamp[ticker] = int(file_timestamp)
-    for ticker in latest_file_timestamp:
-        latest_file = ticker+"_sync_"+str(latest_file_timestamp[ticker])+".json"
-        with open(sys.path[0]+'/chains_status/'+latest_file, 'r') as f:
-            sync_data = json.loads(f.read())
-        latest_block = sync_data['last_longestchain']
-        latest_hash = sync_data['last_longesthash']
-        logger.info("| "+ticker+" | "+latest_block+" | "+latest_hash+" |")
-        # compare with chain explorers / NN 
-        external_hashes = get_external_hashes(latest_block)
-
-def get_external_hashes(ticker, latest_block):
-    sources = hash_sources[ticker]
-    # Oracles? NN could write to without security risk of open port 80 or IP exposure. Write script could also warn NN if they are on fork.
-    # NN requests latest reference hashes.
-    # NN compares local hash of reference block.
-    # NN writes local hash for block to oracle.
-    # One oracle per ticker, per NN
-    # One global aggregated oracle for all NNs per chain
-    # Oracle data could then be read for display on web dashboard, and transmission via TG / Discord bot.
-
-# sync chains
-def chains_start_and_sync():
-    # starting assetchains daemons
-    subprocess.run(["./assetchains.old"])
-    time.sleep(10)
-    # creating a proxy for each assetchain
-    for ticker in ac_tickers:
-        globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
-    # waiting until assetchains are synced
-    while True:
-        are_all_chains_synced = True
-        for ticker in ac_tickers:
-            get_info_result = globals()["assetchain_proxy_{}".format(ticker)].getinfo()
-            if get_info_result["blocks"] < get_info_result["longestchain"]:
-                logger.info(colorize("Chain " + ticker + " is NOT synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "red"))
-                are_all_chains_synced = False
-            else:
-                logger.info(colorize("Chain " + ticker + " is synced. Blocks: " + str(get_info_result["blocks"]) + " Longestchain: " + str(get_info_result["longestchain"]), "green"))
-        if are_all_chains_synced:
-            logger.info(colorize("All chains are on sync now!", "green"))
-            break
-        else:
-            logger.info(colorize("Chain are not synced yet", "red"))
-            time.sleep(60)
-    return True
-
-# write down last block hash
-def save_ac_latest_block_data():
-    blocks_hashes = {}
-    for ticker in ac_tickers:
-        blocks_hashes[ticker] = {}
-        latest_block_height = globals()["assetchain_proxy_{}".format(ticker)].getinfo()["longestchain"]
-        latest_block_height_fifth = int(math.floor(latest_block_height/5)*5)
-        latest_block_hash_fifth = globals()["assetchain_proxy_{}".format(ticker)].getblock(str(latest_block_height_fifth))["hash"]
-        blocks_hashes[ticker]["height"] = latest_block_height
-        blocks_hashes[ticker]["blockhash"] = latest_block_hash
-    string_timestamp = str(int(time.time()))
-    filename = 'ac_blocks_'+string_timestamp+'.json'
-    with open(sys.path[0]+'/chains_status/' + filename, 'w+') as fp:
-        json.dump(blocks_hashes, fp, indent=4)
-    logger.info("Saved data to " + filename)
-
-# clean everything
-def clean_sync_results():
-    for ticker in ac_tickers:
-        get_info_result = globals()["assetchain_proxy_{}".format(ticker)].stop()
-        logger.info(ticker + " stopped!")
-    time.sleep(30)
-    for ticker in ac_tickers:
-        kmd_dir = os.environ['HOME'] + '/.komodo'
-        ac_dir = str(kmd_dir + '/' + ticker + '/')
-        shutil.rmtree(ac_dir)
