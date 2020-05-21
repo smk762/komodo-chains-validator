@@ -71,6 +71,8 @@ def def_credentials(chain):
     if chain in dpow_tickers:
         if 'conf_path' in dpow_tickers[chain]:
             coin_config_file = str(dpow_tickers[chain]['conf_path'])
+        else:
+            coin_config_file = '~/.komodo/'+chain+'/'+chain+'.conf'
     try:
         with open(coin_config_file, 'r') as f:
             for line in f:
@@ -89,7 +91,7 @@ def def_credentials(chain):
                 logger.info("check "+coin_config_file)
                 exit(1)
     except Exception as e:
-        logger.debug("conf_path: "+coin_config_file)
+        logger.debug("chain: "+chain)
         logger.debug("error: "+str(e))
 
 
