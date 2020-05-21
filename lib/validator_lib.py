@@ -211,7 +211,7 @@ def sim_chains_start_and_sync():
                         "blocks":get_info_result["blocks"],
                         "longestchain":get_info_result["longestchain"]
                     })
-                if get_info_result["blocks"] < get_info_result["longestchain"]:
+                if get_info_result["blocks"] < get_info_result["longestchain"] or get_info_result["longestchain"] == 0:
                     logger.info(colorize("Chain " + ticker + " is NOT synced."
                                  + " Blocks: " + str(get_info_result["blocks"]) 
                                  + " Longestchain: " + str(get_info_result["longestchain"]),
