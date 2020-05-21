@@ -276,8 +276,10 @@ def restart_ticker(ticker):
         ticker_launch = dpow_coins_info[ticker]['dpow']['launch_params']
         ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
         logger.info("starting "+ticker)
+        logger.info("starting "+ticker_launch)        
         subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
         time.sleep(30)
+        logger.info("Setting RPC for "+ticker)
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
     except Exception as e:
         logger.debug("error restarting ticker "+ticker+": "+str(e))
