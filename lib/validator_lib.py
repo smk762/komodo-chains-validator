@@ -272,13 +272,14 @@ def clean_chain_data(ticker):
 
 
 def restart_ticker(ticker):
-    logger.info("ticker restart")
     try:
+        logger.info("restarting "+ticker)
         ticker_launch = dpow_coins_info[ticker]['dpow']['launch_params'].split(' ')
+        logger.info("launching with "+str(ticker_launch))
         ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
-        logger.info("starting "+ticker)
-        logger.info("starting "+ticker_launch)        
+        logger.info("outputing to "+ticker_output)        
         subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
+        logger.info("sleeping 30 sec")
         time.sleep(30)
         logger.info("Setting RPC for "+ticker)
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
