@@ -197,6 +197,7 @@ def sim_chains_start_and_sync():
         # 30 sec wait during restart for getting rpc credentials
         # 30 sec * approx. 40 chains = 20 min to start
         restart_ticker(ticker)
+        logger.debug(globals())
         if ticker not in sync_status:
             sync_status.update({ticker:{}})
     while True:
@@ -279,6 +280,7 @@ def restart_ticker(ticker):
         time.sleep(30)
         logger.info("Setting RPC for "+ticker)
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
+        logger.debug(globals())
     except Exception as e:
         logger.debug("error restarting ticker "+ticker+": "+str(e))
 
