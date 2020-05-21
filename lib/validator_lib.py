@@ -101,7 +101,7 @@ def def_credentials(chain):
                 print("rpcport not in conf file, exiting")
                 print("check " + coin_config_file)
                 exit(1)
-
+        logger.info("RPC set for "+chain)
         return (Proxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport))))
     else:
         errmsg = coin_config_file+" does not exist! Please confirm "+str(chain)+" daemon is installed"
