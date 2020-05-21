@@ -34,11 +34,6 @@ if not os.path.isfile(sys.path[0]+'/config/pubkey.txt'):
 with open(sys.path[0]+'/config/pubkey.txt', 'r') as fp:
     local_pubkey = fp.read().strip()
 
-oracle_ticker = "STATSORCL"
-oracle_launch = ['komodod', '-ac_name='+oracle_ticker, '-ac_supply=100000000',
-                '-ac_reward=10000000000', '-ac_staked=99', '-ac_cc=762',
-                '-ac_halving=762000', '-addnode=116.203.120.91', '-addnode=116.203.120.163', '-pubkey='+local_pubkey]
-
 if local_pubkey == "":
     logger.warning("You need to define a local pubkey for a valid address in "+oracle_ticker)
     logger.warning("Launch "+oracle_ticker+" with "+" ".join(oracle_launch))
@@ -278,7 +273,7 @@ def restart_ticker(ticker):
                         .replace("~",os.environ['HOME']).split(' ')
         logger.info("launching with "+str(ticker_launch))
         ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
-        logger.info("outputing to "+ticker_output)        
+        logger.info("outputing to "+sys.path[0]+'/ticker_output/'+ticker+"_output.log")
         subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
         logger.info("sleeping 30 sec")
         time.sleep(30)
