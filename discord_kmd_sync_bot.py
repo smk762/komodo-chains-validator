@@ -43,40 +43,55 @@ async def on_ready():
             f'{guild.name}(id: {guild.id})'
         )
 
-# sends bot message every 5 min if there are failed syncs, or every 4 hours otherwise.
+# sends bot message every hour if there are failed syncs, or every 12 hours otherwise.
 async def get_sync_loop():
     await bot.wait_until_ready()
     loop_count = 13
-    while not bot.is_closed():
-        print(loop_count)
-        channel = bot.get_channel(int(CHANNEL))
-        try:
-            msg = ''
-            r = requests.get('http://138.201.207.24/show_hashtips')
-            if r.status_code == 200:
-                hashtips = r.json()
-                logger.info("Getting hashtips")
-                for ticker in hashtips:
-                    if len(msg) > 1500:
-                        await channel.send(msg)
-                        msg = ''
-                    if loop_count < 12:
-                        msg = await get_sync_msg(hashtips, ticker, msg)
-                    else:
-                        msg = await get_sync_msg(hashtips, ticker, msg, False)
+    while True:
+        if not bot.is_closed():
+            print(loop_count)
+            channel = bot.get_channel(int(CHANNEL))
+            try:
+                msg = ''
+                r = requests.get('http://138.201.207.24/show_hashtips', timeout=30)
+                count = 0
+                while r.status_code != 200 and count < 10:
+                    time.sleep(20)
+                    r = requests.get('http://138.201.207.24/show_hashtips', timeout=30)
+                    count += 1
+                if r.status_code == 200:
+                    hashtips = r.json()
+                    logger.info("Getting hashtips")
+                    for ticker in hashtips:
+                        if len(msg) > 1500:
+                            await channel.send(msg)
+                            msg = ''
+                        if loop_count < 12:
+                            msg = await get_sync_msg(hashtips, ticker, msg)
+                            logger.info("sending success msg")
+                        else:
+                            msg = await get_sync_msg(hashtips, ticker, msg, False)
+                            logger.info("sending failed msg")
+                else:
+                    msg = ":zzz: `@smk762 Sync API is down! Error: "+str(r.status_code)+"`"
+                    logger.info(r.status_code)
+                    try:
+                        logger.info(r.text)
+                    except:
+                        pass
                 if msg != '':
                     await channel.send(msg)
+            except Exception as e:
+                logger.warning(str(e))
+            logger.info("sleeping for an hour. Loop count: "+str(loop_count))
+            await asyncio.sleep(3600)
+            if loop_count < 12:
+                loop_count += 1
             else:
-                msg = ":zzz: `Bot's not here man... (Sync API is down!).`"
-                await channel.send(msg)
-        except Exception as e:
-            logger.warning(str(e))
-        logger.info("sleeping for an hour")
-        await asyncio.sleep(3600)
-        if loop_count < 12:
-            loop_count += 1
+                loop_count = 0
+            logger.info("loop count = "+str(loop_count))
         else:
-            loop_count = 0
+            await bot.wait_until_ready()
 
 async def get_sync_msg(hashtips, ticker, msg, failed_only=True):
     if ticker == 'last_updated':
@@ -91,9 +106,8 @@ async def get_sync_msg(hashtips, ticker, msg, failed_only=True):
         elif not failed_only:
             blockhash = list(hashtips[ticker][block].keys())[0]
             nodes = hashtips[ticker][block][blockhash]
-            while len(nodes) == 1:
-                await asyncio.sleep(300)
-
+            #while len(nodes) < 2:
+            #    await asyncio.sleep(300)
             msg += ":koala: `{:12s} OK! Block {:10s} has hash {}\n".format("["+ticker+"]", "["+block+"]", "["+blockhash+"], nodes "+str(nodes)+" agree` ")
     return msg
 
@@ -114,3 +128,4 @@ async def get_hashes(ctx):
 
 bot.loop.create_task(get_sync_loop())
 bot.run(TOKEN)
+

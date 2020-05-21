@@ -92,11 +92,12 @@ def def_credentials(chain):
     return Proxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport)))
 
 ac_tickers = ["REVS", "SUPERNET", "DEX", "PANGEA", "JUMBLR", "BET", "CRYPTO", "HODL",
-              "MSHARK", "BOTS", "MGW", "COQUICASH", "WLC", "KV", "MESH", "AXO", "ETOMIC",
+              "MSHARK", "BOTS", "MGW", "COQUICASH", "KV", "MESH", "AXO", "ETOMIC",
               "BTCH", "NINJA", "OOT", "ZILLA", "RFOX", "SEC", "CCL", "PIRATE", "PGT", "KSB",
               "OUR", "ILN", "RICK", "MORTY", "KOIN", "ZEXO", "K64", "THC", "WLC21"]
 #ac_tickers = ["ILN", "RICK", "MORTY"]
 #ac_tickers = ["ILN", "RICK", "MORTY", "HUSH3"]
+exclude_tickers = ['WLC']
 
 notary_pubkeys =  {
     "madmax_NA": "0237e0d3268cebfa235958808db1efc20cc43b31100813b1f3e15cc5aa647ad2c3", 
@@ -355,8 +356,12 @@ def report_nn_tip_hashes():
         for ticker in ac_tickers:
             try:
                 sync_ticker_data = sync_data[ticker]
-                sync_ticker_block = sync_ticker_data['last_longestchain']
-                sync_ticker_hash = sync_ticker_data['last_longesthash']
+                try:
+                    sync_ticker_block = sync_ticker_data['last_longestchain']
+                    sync_ticker_hash = sync_ticker_data['last_longesthash']
+                except:
+                    sync_ticker_block = 0
+                    sync_ticker_hash = ''
                 ticker_rpc = globals()["assetchain_proxy_{}".format(ticker)]
                 ticker_timestamp = int(time.time())
                 sync_status[ticker].update({"last_updated":ticker_timestamp})
@@ -370,6 +375,7 @@ def report_nn_tip_hashes():
                                 + " Blocks: " + str(get_info_result["blocks"])
                                 + " Longestchain: "+ str(get_info_result["longestchain"]),
                                   "red"))
+                    ticker_sync_block_hash = ''
                 else:
                     logger.info(colorize("Chain " + ticker + " is synced."
                                 + " Blocks: " + str(get_info_result["blocks"])

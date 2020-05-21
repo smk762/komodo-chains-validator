@@ -42,6 +42,7 @@ logger.setLevel(logging.INFO)
 
 rpc_proxy = validator_lib.def_credentials(validator_lib.oracle_ticker)
 ignore_oracles = []
+exclude_tickers = ['WLC']
 
 def get_hashtip_oracles():
     # get oracles list
@@ -86,6 +87,7 @@ def get_hashtip_oracles():
                 logger.warning(node_name+" Oracle info: "+str(oracle_info))
     return hashtip_oracles
 
+
 def get_hashtips():
     hashtips = {}
     node_name_update = {}
@@ -101,37 +103,38 @@ def get_hashtips():
                     ticker_names = list(sample_data.keys())
                     ticker_names.sort()
                     for ticker in ticker_names:
-                        if ticker == 'last_updated':
-                            if 'last_updated' not in hashtips:
-                                hashtips.update({'last_updated':{}})
-                            hashtips['last_updated'].update({node_name:sample_data['last_updated']})
-                        else:
-                            try:
-                                tip_block = str(sample_data[ticker]['last_longestchain'])
-                                tip_hash = sample_data[ticker]['last_longesthash']
-                                tip_updated = sample_data[ticker]['last_updated']
+                        if ticker not in exclude_tickers:
+                            if ticker == 'last_updated':
+                                if 'last_updated' not in hashtips:
+                                    hashtips.update({'last_updated':{}})
+                                hashtips['last_updated'].update({node_name:sample_data['last_updated']})
+                            else:
+                                try:
+                                    tip_block = str(sample_data[ticker]['last_longestchain'])
+                                    tip_hash = sample_data[ticker]['last_longesthash']
+                                    tip_updated = sample_data[ticker]['last_updated']
 
-                                if ticker not in hashtips:
-                                    hashtips.update({ticker:{}})
-                                if ticker not in node_name_update:
-                                    node_name_update.update({ticker:tip_updated})
+                                    if ticker not in hashtips:
+                                        hashtips.update({ticker:{}})
+                                    if ticker not in node_name_update:
+                                        node_name_update.update({ticker:tip_updated})
 
-                                # ignore dead oracles with same node_name
-                                if tip_updated >= node_name_update[ticker]:
-                                    if tip_block not in hashtips[ticker]:
-                                        hashtips[ticker].update({tip_block:{}})
-                                    if tip_hash not in hashtips[ticker][tip_block]:
-                                        hashtips[ticker][tip_block].update({tip_hash:[]})
-                                    # add node_name to ticker / block / hash list
-                                    nodes_on_hash = hashtips[ticker][tip_block][tip_hash]
-                                    nodes_on_hash.append(node_name)
-                                    hashtips[ticker][tip_block].update({tip_hash:nodes_on_hash})
-                                    # set latest update time for node_name / ticker
-                                    node_name_update.update({ticker:tip_updated})
-                            except Exception as e:
-                                pass
-                                # this can happen for unsynced chains on the looper
-                                #logger.warning("Error getting hashtip for "+node_name+"/"+ticker+": "+str(e))
+                                    # ignore dead oracles with same node_name
+                                    if tip_updated >= node_name_update[ticker]:
+                                        if tip_block not in hashtips[ticker]:
+                                            hashtips[ticker].update({tip_block:{}})
+                                        if tip_hash not in hashtips[ticker][tip_block]:
+                                            hashtips[ticker][tip_block].update({tip_hash:[]})
+                                        # add node_name to ticker / block / hash list
+                                        nodes_on_hash = hashtips[ticker][tip_block][tip_hash]
+                                        nodes_on_hash.append(node_name)
+                                        hashtips[ticker][tip_block].update({tip_hash:nodes_on_hash})
+                                        # set latest update time for node_name / ticker
+                                        node_name_update.update({ticker:tip_updated})
+                                except Exception as e:
+                                    pass
+                                    # this can happen for unsynced chains on the looper
+                                    #logger.warning("Error getting hashtip for "+node_name+"/"+ticker+": "+str(e))
         except Exception as e:
             logger.warning("Error getting hashtip: "+str(e))
     return hashtips
