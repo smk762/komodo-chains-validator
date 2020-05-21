@@ -92,11 +92,11 @@ def def_credentials(chain):
         conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
         path_file = os.path.split(os.path.abspath(conf_filepath))
         conf_file = path_file[1]
-        print(colorize('~/komodo-chains-validator/confs/'+conf_file, 'green'))
+        print(colorize(os.environ['HOME']+'/komodo-chains-validator/confs/'+conf_file, 'green'))
         print(colorize(conf_filepath, 'red'))
-        if os.path.isfile('~/komodo-chains-validator/confs/'+conf_file):
+        if os.path.isfile(os.environ['HOME']+'/komodo-chains-validator/confs/'+conf_file):
             print(colorize("is file", 'green'))
-            shutil.copyfile('~/komodo-chains-validator/confs/'+conf_file, coin_config_file)
+            shutil.copyfile(os.environ['HOME']+'/komodo-chains-validator/confs/'+conf_file, coin_config_file)
     if os.path.isfile(coin_config_file):        
         logger.info("is file")
         with open(coin_config_file, 'r') as f:
@@ -279,8 +279,8 @@ def clean_chain_data(ticker):
     logger.info(conf_path+" deleted")
     # some 3P chains do not create a conf, will need to do this manually by copying ./confs/{chain}.conf into required folder.
     os.makedirs(conf_path)
-    if os.path.isfile('~/komodo-chains-validator/confs/'+conf_file):
-        shutil.copyfile('~/komodo-chains-validator/confs/'+conf_file, conf_filepath)
+    if os.path.isfile(os.environ['HOME']+'/komodo-chains-validator/confs/'+conf_file):
+        shutil.copyfile(os.environ['HOME']+'/komodo-chains-validator/confs/'+conf_file, conf_filepath)
 
 
 def restart_ticker(ticker):
