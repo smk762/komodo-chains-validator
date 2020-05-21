@@ -78,8 +78,8 @@ def def_credentials(chain):
     logger.info(ac_dir)
     if chain in dpow_tickers:
         logger.info(chain+" in "+str(dpow_tickers))
-        if 'conf_path' in dpow_tickers[chain]:
-            coin_config_file = str(dpow_tickers[chain]['conf_path'].replace("~",os.environ['HOME']))
+        if 'conf_path' in dpow_coins_info[chain]:
+            coin_config_file = str(dpow_coins_info[chain]['conf_path'].replace("~",os.environ['HOME']))
         else:
             logger.debug("Conf path not in dpow info for "+chain)
     elif chain == 'KMD':
