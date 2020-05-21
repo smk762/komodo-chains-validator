@@ -67,44 +67,47 @@ def colorize(string, color):
 
 # Set RPC proxy - LINUX ONLY!
 def def_credentials(chain):
-    rpcport = ''
+    rpcport = '';
+    operating_system = platform.system()
+    if operating_system == 'Darwin':
+        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
+    elif operating_system == 'Linux':
+        ac_dir = os.environ['HOME'] + '/.komodo'
+    elif operating_system == 'Windows':
+        ac_dir = '%s/komodo/' % os.environ['APPDATA']
     if chain in dpow_tickers:
         if 'conf_path' in dpow_tickers[chain]:
             coin_config_file = str(dpow_tickers[chain]['conf_path'])
         else:
             logger.debug("Conf path not in dpow info for "+chain)
+    elif chain == 'KMD':
+        coin_config_file = str(ac_dir + '/komodo.conf')
     else:
-        coin_config_file =  os.environ['HOME']+'/.komodo/'+chain+'/'+chain+'.conf'
-    logger.info("Loading "+coin_config_file)
-    try:
-        if os.path.isfile(coin_config_file):
-            with open(coin_config_file, 'r') as f:
-                
-                logger.info(f.text)
-                logger.info(f)
-                logger.info(f.read())
-                for line in f:
-                    logger.info(line)
-                    l = line.rstrip()
-                    if re.search('rpcuser', l):
-                        rpcuser = l.replace('rpcuser=', '')
-                    elif re.search('rpcpassword', l):
-                        rpcpassword = l.replace('rpcpassword=', '')
-                    elif re.search('rpcport', l):
-                        rpcport = l.replace('rpcport=', '')
-            if len(rpcport) == 0:
-                if chain == 'KMD':
-                    rpcport = 7771
-                else:
-                    logger.info("rpcport not in conf file, exiting")
-                    logger.info("check "+coin_config_file)
-                    exit(1)
-        else:
-            logger.debug(coin_config_file+" is not a file!")
-    except Exception as e:
-        logger.debug("chain: "+chain)
-        logger.debug("error: "+str(e))
-    return Proxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport)))
+        coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
+    if os.path.isfile(coin_config_file):
+        with open(coin_config_file, 'r') as f:
+            for line in f:
+                l = line.rstrip()
+                if re.search('rpcuser', l):
+                    rpcuser = l.replace('rpcuser=', '')
+                elif re.search('rpcpassword', l):
+                    rpcpassword = l.replace('rpcpassword=', '')
+                elif re.search('rpcport', l):
+                    rpcport = l.replace('rpcport=', '')
+        if len(rpcport) == 0:
+            if chain == 'KMD':
+                rpcport = 7771
+            else:
+                print("rpcport not in conf file, exiting")
+                print("check " + coin_config_file)
+                exit(1)
+
+        return (Proxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport))))
+    else:
+        errmsg = coin_config_file+" does not exist! Please confirm "+str(chain)+" daemon is installed"
+        print(colorize(errmsg, 'red'))
+        exit(1)
+        
 
 r = requests.get('http://notary.earth:8762/info/coins/?dpow_active=1')
 
