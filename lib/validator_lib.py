@@ -79,6 +79,7 @@ def def_credentials(chain):
     try:
         if os.path.isfile(coin_config_file):
             with open(coin_config_file, 'r') as f:
+                logger.info(f.read())
                 for line in f:
                     logger.info(line)
                     l = line.rstrip()
@@ -100,8 +101,6 @@ def def_credentials(chain):
     except Exception as e:
         logger.debug("chain: "+chain)
         logger.debug("error: "+str(e))
-
-
     return Proxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport)))
 
 r = requests.get('http://notary.earth:8762/info/coins/?dpow_active=1')
