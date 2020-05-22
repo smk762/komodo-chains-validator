@@ -194,11 +194,15 @@ def write2oracle(rpc_proxy, oracletxid, message):
     result = oraclesdata_result['result']
     if result == 'error':
         logger.warning('ERROR:' + oraclesdata_result['error'] + ', try using oraclesregister if you have not already, and check the oracle is funded')
+        orcl_info = rpc_proxy.oraclesinfo(oracletxid)
+        reg_json=orcl_info['registered']
+        publisher=str(orcl_info['registered'][0]['publisher'])
+        fund_oracle(rpc_proxy, oracletxid, publisher, 1000)
     else:
         rawtx = oraclesdata_result['hex']
         sendrawtransaction_result = rpc_proxy.sendrawtransaction(rawtx)
-    logger.info(colorize("Message ["+message+"] written to oracle.", 'green'))
-    return sendrawtransaction_result
+        logger.info(colorize("Message ["+message+"] written to oracle.", 'green'))
+        return sendrawtransaction_result
 
 def read_oracle(rpc_proxy, oracletxid, numrec):
     pubkey = rpc_proxy.getinfo()['pubkey']
