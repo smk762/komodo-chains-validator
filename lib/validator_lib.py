@@ -27,7 +27,8 @@ for ticker in dpow_coins_info:
     else: 
         dpow_tickers.append(ticker)
         
-dpow_tickers.remove('BTC')
+if 'BTC' in dpow_tickers:
+    dpow_tickers.remove('BTC')
 logger.info("dpow_tickers: "+str(dpow_tickers))
 # create app folders
 app_subfolders = ['chains_status', 'ticker_output', 'config']
