@@ -22,7 +22,7 @@ dpow_coins_info = r.json()['results'][0]
 dpow_tickers = []
 for ticker in dpow_coins_info:
     if main_server_only:
-        if dpow_coins_info[ticker]['dpow']['server'] == dPoW-mainnet:
+        if dpow_coins_info[ticker]['dpow']['server'] == 'dPoW-mainnet':
             dpow_tickers.append(ticker)
     else: 
         dpow_tickers.append(ticker)
