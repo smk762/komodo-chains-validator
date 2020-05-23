@@ -14,7 +14,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-r = requests.get('http://notary.earth:8762/info/coins/?dpow_active=1')
+r = requests.get('http://notary.earth:8762/api/info/coins/?dpow_active=1')
 
 dpow_coins_info = r.json()['results'][0]
 dpow_tickers = list(dpow_coins_info.keys())
