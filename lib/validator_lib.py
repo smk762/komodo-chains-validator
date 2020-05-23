@@ -12,6 +12,8 @@ import shutil
 from . import oraclelib
 import logging
 
+main_server_only = False
+
 logger = logging.getLogger(__name__)
 
 r = requests.get('http://notary.earth:8762/api/info/coins/?dpow_active=1')
@@ -19,8 +21,11 @@ r = requests.get('http://notary.earth:8762/api/info/coins/?dpow_active=1')
 dpow_coins_info = r.json()['results'][0]
 dpow_tickers = []
 for ticker in dpow_coins_info:
-    if dpow_coins_info[ticker]['dpow']['server'] == dPoW-mainnet:
-        dpow_tickers.append(coin)
+    if main_server_only:
+        if dpow_coins_info[ticker]['dpow']['server'] == dPoW-mainnet:
+            dpow_tickers.append(ticker)
+    else: 
+        dpow_tickers.append(ticker)
         
 dpow_tickers.remove('BTC')
 logger.info("dpow_tickers: "+str(dpow_tickers))
