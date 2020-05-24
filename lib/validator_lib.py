@@ -274,14 +274,16 @@ def clean_chain_data(ticker):
     stop_result = globals()["assetchain_proxy_{}".format(ticker)].stop()
     logger.info(ticker + " stopped!")
     time.sleep(30)
+    
     conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
     print(conf_filepath)
-    path_file = os.path.split(os.path.abspath(conf_filepath))
+    path_file = os.path.split(conf_filepath)
     print(path_file)
     conf_path = path_file[0]
     print(conf_path)
     conf_file = path_file[1]
     print(conf_file)
+
     shutil.rmtree(conf_path)
     logger.info(conf_path+" deleted")
     # some 3P chains do not create a conf, will need to do this manually by copying ./confs/{chain}.conf into required folder.
@@ -456,12 +458,3 @@ def report_nn_tip_hashes():
             logger.info("this_node_update_time: "+str(this_node_update_time))
         time.sleep(600)
     return True
-
-conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
-print(conf_filepath)
-path_file = os.path.split(conf_filepath)
-print(path_file)
-conf_path = path_file[0]
-print(conf_path)
-conf_file = path_file[1]
-print(conf_file)
