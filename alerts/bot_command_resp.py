@@ -30,7 +30,7 @@ def get_chain_balances(chain):
             notary = result['notary']
             if notary not in ignore_notaries:
                 balance = result['balance']
-                address = result['address']
+                address = "<a href='https://live.blockcypher.com/btc/address/"+result['address']+"/'>"+result['address']+"</a>"
                 update_time = time.ctime(result['update_time'])
                 if float(result['balance']) < 0.01:
                     msg += "As at {}, {} has LOW {} BALANCE {} for {}\n" \
