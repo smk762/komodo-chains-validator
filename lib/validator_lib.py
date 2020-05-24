@@ -275,9 +275,13 @@ def clean_chain_data(ticker):
     logger.info(ticker + " stopped!")
     time.sleep(30)
     conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
+    print()
     path_file = os.path.split(os.path.abspath(conf_filepath))
+    print(path_file)
     conf_path = path_file[0]
+    print(conf_path)
     conf_file = path_file[1]
+    print(conf_file)
     shutil.rmtree(conf_path)
     logger.info(conf_path+" deleted")
     # some 3P chains do not create a conf, will need to do this manually by copying ./confs/{chain}.conf into required folder.
