@@ -1,2 +1,6 @@
 fastapi
 uvicorn
+discord.py
+slick-bitcoinrpc
+pyTelegramBotAPI
+python-telegram-bot
