@@ -459,7 +459,7 @@ def report_nn_tip_hashes():
 
 conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
 print(conf_filepath)
-path_file = os.path.split(os.path.abspath(conf_filepath))
+path_file = os.path.split(conf_filepath)
 print(path_file)
 conf_path = path_file[0].split('~')[0]
 print(conf_path)
