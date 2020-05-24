@@ -461,7 +461,7 @@ conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
 print(conf_filepath)
 path_file = os.path.split(os.path.abspath(conf_filepath))
 print(path_file)
-conf_path = path_file[0]
+conf_path = path_file[0].split('~')[0]
 print(conf_path)
 conf_file = path_file[1]
 print(conf_file)
