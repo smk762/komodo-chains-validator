@@ -54,8 +54,7 @@ def send_welcome(message):
         chain = "BTC"
         get_chain_balances(chain)
     except Exception as e:
-        print(e)
-        bot.reply_to(message, "Need to enter a coin! Try `/get_btc_balances`")
+        bot.reply_to(message, e)
 
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
