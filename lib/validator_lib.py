@@ -275,7 +275,7 @@ def clean_chain_data(ticker):
     logger.info(ticker + " stopped!")
     time.sleep(30)
     conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
-    print()
+    print(conf_filepath)
     path_file = os.path.split(os.path.abspath(conf_filepath))
     print(path_file)
     conf_path = path_file[0]
@@ -457,3 +457,11 @@ def report_nn_tip_hashes():
         time.sleep(600)
     return True
 
+conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
+print(conf_filepath)
+path_file = os.path.split(os.path.abspath(conf_filepath))
+print(path_file)
+conf_path = path_file[0]
+print(conf_path)
+conf_file = path_file[1]
+print(conf_file)
