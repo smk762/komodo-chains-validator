@@ -38,6 +38,7 @@ def get_btc_balances():
         pubkey_file = 's4_nn_pubkeys.json'
     else:
         pubkey_file = 's3_nn_pubkeys.json'
+    pubkey_file = os.path.join(os.path.dirname(__file__), pubkey_file)
 
     with open(pubkey_file) as f:
         notary_pubkeys = json.load(f)

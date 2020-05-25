@@ -4,3 +4,5 @@ discord.py
 slick-bitcoinrpc
 pyTelegramBotAPI
 python-telegram-bot
+base58
+python-bitcoinlib
