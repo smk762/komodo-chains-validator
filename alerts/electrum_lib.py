@@ -8,13 +8,25 @@ import codecs
 import base58
 import logging
 import logging.handlers
+from logging import Handler, Formatter
+import bitcoin
+from bitcoin.core import x
+from bitcoin.core import CoreMainParams
+from bitcoin.wallet import P2PKHBitcoinAddress
 
 logger = logging.getLogger()
 handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+formatter = Formatter('%(asctime)s %(levelname)-8s %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+
+class BTC_CoinParams(CoreMainParams):
+    MESSAGE_START = b'\x24\xe9\x27\x64'
+    DEFAULT_PORT = 7770
+    BASE58_PREFIXES = {'PUBKEY_ADDR': 0,
+                       'SCRIPT_ADDR': 5,
+                       'SECRET_KEY': 128}
 
 def get_from_electrum(url, port, method, params=[]):
     try:
@@ -31,6 +43,9 @@ def get_from_electrum(url, port, method, params=[]):
 
 def lil_endian(hex_str):
     return ''.join([hex_str[i:i+2] for i in range(0, len(hex_str), 2)][::-1])
+
+def get_addr_from_pubkey(pubkey):
+    return str(P2PKHBitcoinAddress.from_pubkey(x(pubkey)))
 
 def get_p2pk_scripthash_from_pubkey(pubkey):
     scriptpubkey = '21' +pubkey+ 'ac'
@@ -55,7 +70,9 @@ def get_full_electrum_balance(pubkey, url, port):
     p2pk_scripthash = get_p2pk_scripthash_from_pubkey(pubkey)
     p2pkh_scripthash = get_p2pkh_scripthash_from_pubkey(pubkey)
     p2pk_resp = get_from_electrum(url, port, 'blockchain.scripthash.get_balance', p2pk_scripthash)
+    print(p2pk_resp)
     p2pkh_resp = get_from_electrum(url, port, 'blockchain.scripthash.get_balance', p2pkh_scripthash)
+    print(p2pkh_resp)
     p2pk_confirmed_balance = p2pk_resp['result']['confirmed']
     p2pkh_confirmed_balance = p2pkh_resp['result']['confirmed']
     p2pk_unconfirmed_balance = p2pk_resp['result']['unconfirmed']
