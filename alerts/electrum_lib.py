@@ -192,23 +192,27 @@ def get_balance(chain, addr, pubkey):
                 source = url+":"+str(port)
                 balance = get_full_electrum_balance(pubkey, url, port)
             except Exception as e:
-                print(chain+" "+source+" ERR: "+str(e))
+                print("!!!!! "+chain+" "+source+" ERR: "+str(e))
+                balance = -1
                 try:
                     source = "dexstats"
                     balance = get_dexstats_balance(chain, addr)
                 except Exception as e:
-                    print(chain+" "+source+" ERR: "+str(e))
+                    print("!!!!! "+chain+" "+source+" ERR: "+str(e))
+                    balance = -1
 
         elif chain in antara_coins:
             try:
                 source = "dexstats"
                 balance = get_dexstats_balance(chain, addr)
             except Exception as e:
-                print(chain+" "+source+" ERR: "+str(e))
+                print("!!!!! "+chain+" "+source+" ERR: "+str(e))
+                balance = -1
 
         elif chain == "GIN":
             print("gin is dead?")
             source = "None"
+            balance = -1
         elif chain == "AYA":
             url = 'https://explorer.aryacoin.io/ext/getaddress/'+addr
             r = requests.get(url)
@@ -216,12 +220,14 @@ def get_balance(chain, addr, pubkey):
                 source = 'explorer.aryacoin.io'
                 balance = r.json()['balance']
             except Exception as e:
-                print(chain+" "+source+" ERR: "+str(e))
+                print("!!!!! "+chain+" "+source+" ERR: "+str(e))
+                balance = -1
 
     except Exception as e:
-        print("get_balance ERR: "+str(e))
+        print("!!!!! get_balance ERR: "+str(e))
+        balance = -1
     if balance != -1:
-        print("<<<<< "+chain+" via ["+source+"] OK | addr: "+addr+" | balance: "+str(balance))
+        print("<<<<< "+'{:^12}'.format(chain)+" | "+'{:^40}'.format(source)+"|   OK   | "+addr+" | "+str(balance))
     else:
-        print("##### "+chain+" via ["+source+"] FAILED | addr: "+addr+" | balance: "+str(balance))
+        print("##### "+'{:^12}'.format(chain)+" | "+'{:^40}'.format(source)+"| FAILED | "+addr+" | "+str(balance))
     return balance, source
