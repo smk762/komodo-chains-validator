@@ -4,6 +4,7 @@ import json
 import time
 import logging
 import telebot
+import datetime
 import threading
 import concurrent.futures
 from telebot import util
@@ -61,9 +62,11 @@ seasons = {
 now = int(time.time())
 
 if now > seasons['Season_3']['end_time']:
+    season = "Season_4"
     pubkey_file = 's4_nn_pubkeys.json'
     pubkey_file_3p = 's4_nn_pubkeys_3p.json'
 else:
+    season = "Season_3"
     pubkey_file = 's3_nn_pubkeys.json'
     pubkey_file_3p = 's3_nn_pubkeys_3p.json'
 
@@ -108,7 +111,7 @@ def scan_balances():
     for notary in notaries:
         thread_list.update({notary:[]})
         balances_dict.update({notary:{}})
-        scan_msg = ''
+        print("----- "+notary)
 
         for chain in electrum_lib.main_coins:
             pubkey = notary_pubkeys[notary]
@@ -125,20 +128,25 @@ def scan_balances():
         for thread in thread_list[notary]:
             thread.start()
 
-        time.sleep(1)
+        time.sleep(2)
 
 scan_balances()
 
-while len(balances_dict) < 64:
-    print("Waiting for balances dict to populate..."+str(len(balances_dict)-1)+"/64 complete....")
+while len(balances_dict) < len(notaries):
+    print("Waiting for balances dict notaries to populate..."+str(len(balances_dict))+"/"+str(len(notaries))+" complete....")
     time.sleep(3)
 
 num_coins = len(electrum_lib.main_coins) + len(electrum_lib.third_party_coins)
 
 for notary in notaries:
+    i = 0
     while len(balances_dict[notary]) < num_coins:
-        print("Waiting for balances dict to populate..."+str(len(balances_dict)-1)+"/64 complete....")
+        i += 1
+        print("Waiting for balances dict chains to populate for "+notary+"..."+str(len(balances_dict[notary]))+"/"+str(num_coins)+" complete....")
         time.sleep(3)
+        if i > 20:
+            print("Waited too long for "+notary+"... continuing anyway...")
+            break
 
 print("Complete!")
 
@@ -174,32 +182,53 @@ for notary in notaries:
                         "address":address
                     }
                 })
-messages = ''
+
+
+human_now = time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())
+time.ctime(now)
+
+messages = "*"*64+"\n"
+messages += "|"+'{:^62}'.format(season.replace('_', ' ').upper()+" NOTARY BALANCES REPORT: "+str(human_now))+"|\n"
 for notary in low_balances:
-    messages += "\n"
-    messages += '******* '+'{:^40}'.format(notary+" has low balances!")+" *******\n"
+    messages += "*"*20+'{:^24}'.format(notary.upper())+"*"*20+"\n"
     chains = list(low_balances[notary].keys())
     chains.sort()
-    for chain in low_balances[notary]:
+    for chain in chains:
         address = low_balances[notary][chain]["address"]
         balance = low_balances[notary][chain]["balance"]
-        messages +=  '{:^10}'.format(chain)+" "+address+" | "+str(balance)+"\n"
-        if len(messages) > 3900:
-            print(len(messages))
+        messages += "|"+'{:^62}'.format('{:^10}'.format(chain)+"|"+'{:^36}'.format(address)+" | "+'{:^10}'.format(str(balance)))+"|\n"
+        if len(messages) > 4000:
+            print(len(messages))    
             logger.warning(messages)
             messages = ''
 
+messages += "*"*64+"\n"
 for chain in chain_fails:
     num_fails = len(chain_fails[chain])
     if num_fails > 0:
-        messages += '{:^56}'.format(str(num_fails)+" failed balance queries for "+chain)+"\n"
-        if len(messages) > 3900:
+        messages += "|"+'{:^62}'.format('{:^10}'.format('')+"|"+'{:^36}'.format(str(num_fails)+" failed queries for "+chain).upper()+" | "+'{:^10}'.format(''))+"|\n"
+        if len(messages) > 4000:
             print(len(messages))
             logger.warning(messages)
             messages = ''
 
-if messages != '':
-    logger.warning(messages+"\n")
+messages += "*"*20+'{:^24}'.format("REPORT ENDS")+"*"*20+"\n"
+logger.warning(messages)
+
+json_report = {
+    "low_balances":low_balances,
+    "time":int(time.time()),
+    "sources": {
+        "dexstats": list(set(from_dexstats)),
+        "electrums": list(set(from_cipig)),
+        "other": other_sources
+    },
+    "failed":chain_fails
+}
+
+with open('balances_report.json', 'w+') as j:
+    json.dump(json_report, j, indent = 4, sort_keys=True)
+
 
 print("From DexStats: "+str(set(from_dexstats)))
 print("From Cipig: "+str(set(from_cipig)))
