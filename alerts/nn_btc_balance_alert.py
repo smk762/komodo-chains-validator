@@ -4,6 +4,8 @@ import json
 import time
 import logging
 import telebot
+import threading
+import concurrent.futures
 from telebot import util
 from telegram import ParseMode
 import requests
@@ -56,50 +58,143 @@ seasons = {
     }
 }
 
-def get_btc_balances():
+now = int(time.time())
 
-    now = int(time.time())
+if now > seasons['Season_3']['end_time']:
+    pubkey_file = 's4_nn_pubkeys.json'
+    pubkey_file_3p = 's4_nn_pubkeys_3p.json'
+else:
+    pubkey_file = 's3_nn_pubkeys.json'
+    pubkey_file_3p = 's3_nn_pubkeys_3p.json'
 
-    if now > seasons['Season_3']['end_time']:
-        pubkey_file = 's4_nn_pubkeys.json'
-    else:
-        pubkey_file = 's3_nn_pubkeys.json'
+pubkey_file = os.path.join(os.path.dirname(__file__), pubkey_file)
+with open(pubkey_file) as f:
+    notary_pubkeys = json.load(f)
 
-    pubkey_file = os.path.join(os.path.dirname(__file__), pubkey_file)
+pubkey_file_3p = os.path.join(os.path.dirname(__file__), pubkey_file_3p)
+with open(pubkey_file_3p) as f:
+    notary_pubkeys_3p = json.load(f)
 
-    with open(pubkey_file) as f:
-        notary_pubkeys = json.load(f)
+notaries = list(notary_pubkeys.keys())
+notaries.sort()
 
-    msg = ''
-    i = 1
-    for notary in notary_pubkeys:
-        print("scanning "+str(i)+" / "+str(len(notary_pubkeys))+" NN addresses...")
+class electrum_thread(threading.Thread):
+    def __init__(self, chain, addr, pubkey, notary):
+        threading.Thread.__init__(self)
+        self.pubkey = pubkey
+        self.chain = chain
+        self.addr = addr
+        self.notary = notary
+    def run(self):
+        thread_electrum(self.chain, 
+                        self.addr, self.pubkey, self.notary)
+
+def thread_electrum(chain, addr, pubkey, notary):
+    balance_data = electrum_lib.get_balance(chain, addr, pubkey)
+    if chain == 'KMD' and pubkey == notary_pubkeys_3p[notary]:
+        chain = "KMD_3P"
+    if chain not in balances_dict[notary]:
+        balances_dict[notary].update({chain:{}})
+    balances_dict[notary][chain].update({
+                                    "address":addr,
+                                    "balance":balance_data[0],
+                                    "source":balance_data[1]
+                                })
+
+thread_list = []
+balances_dict = {}
+def scan_balances():
+    global balances_dict
+    chain = 'BTC'
+    for notary in notaries:
+        balances_dict.update({notary:{}})
+        scan_msg = ''
+
         pubkey = notary_pubkeys[notary]
-        address = electrum_lib.get_addr_from_pubkey(pubkey)
-        address = "<a href='https://live.blockcypher.com/btc/address/" \
-                   +address+"/'>"+address+"</a>"
-        print(notary+" BTC: "+address)
-        balance = electrum_lib.get_full_electrum_balance(pubkey,
-                                 'electrum1.cipig.net', '10000')/100000000
-        print(notary+" BTC: "+str(balance))
+        addr = electrum_lib.get_addr_from_pubkey(pubkey, chain)
 
-        print("{} has {} BALANCE {} for {}\n" \
-                    .format("["+address+"]", 'BTC',
-                            "["+str(balance)+"]", "["+notary+"]"))
+        thread_list.append(electrum_thread(chain, addr, pubkey, notary))
 
-        if float(balance) < 0.01:
-            msg += "{} has LOW {} BALANCE {} for {}\n" \
-                    .format("["+address+"]", 'BTC',
-                            "["+str(balance)+"]", "["+notary+"]")
-            print(msg)
+    for thread in thread_list:
+        thread.start()
+        time.sleep(0.1)
 
+    
+
+scan_balances()
+
+while len(balances_dict) < 64:
+    print("Waiting for balances dict to populate..."+str(len(balances_dict)-1)+"/64 complete....")
+    time.sleep(3)
+
+for notary in notaries:
+    print(notary)    
+    while len(balances_dict[notary]) < 1:
+        print(balances_dict[notary])
+        print("Waiting for balances dict addresses to populate..."+str(len(balances_dict)-1)+"/64 complete....")
+        time.sleep(3)
+
+print("Complete!")
+
+from_dexstats = []
+from_cipig = []
+other_sources = {}
+chain_fails = {}
+low_balances = {}
+for notary in notaries:
+    for chain in balances_dict[notary]:
+        if chain not in chain_fails:
+            chain_fails.update({chain:[]})
+
+        balance = balances_dict[notary][chain]["balance"]
+        address = balances_dict[notary][chain]["address"]
+        source = balances_dict[notary][chain]["source"]
+
+        if source == "dexstats":
+            from_dexstats.append(chain)
+        elif source.find('cipig') != -1:
+            from_cipig.append(chain)
         else:
-            # msg += "As at {}, {} {} balance OK {} for {}\n" \
-            #        .format(str(update_time), "["+address+"]", chain, "["+balance+"]", "["+notary+"]",)
-            pass
-        time.sleep(0.2)
-        i += 1
+            other_sources.update({chain: source})
 
-    logger.error(msg)
+        if balance == -1:
+            chain_fails[chain].append(notary)
+        elif float(balance) < 0.01:
+            if notary not in low_balances:
+                low_balances.update({notary:{}})
+            low_balances[notary].update({
+                    chain:{
+                        "balance":balance,
+                        "address":address
+                    }
+                })
+messages = ''
+for notary in low_balances:
+    messages += "\n"
+    messages += '******* '+'{:^40}'.format(notary+" has low balances!")+" *******\n"
+    chains = list(low_balances[notary].keys())
+    chains.sort()
+    for chain in low_balances[notary]:
+        address = low_balances[notary][chain]["address"]
+        balance = low_balances[notary][chain]["balance"]
+        messages +=  '{:^10}'.format(chain)+" "+address+" | "+str(balance)+"\n"
+        if len(messages) > 3900:
+            print(len(messages))
+            logger.warning(messages)
+            messages = ''
 
-get_btc_balances()
+for chain in chain_fails:
+    num_fails = len(chain_fails[chain])
+    if num_fails > 0:
+        messages += '{:^56}'.format(str(num_fails)+" failed balance queries for "+chain)+"\n"
+        if len(messages) > 3900:
+            print(len(messages))
+            logger.warning(messages)
+            messages = ''
+
+if messages != '':
+    logger.warning(messages+"\n")
+
+print("From DexStats: "+str(set(from_dexstats)))
+print("From Cipig: "+str(set(from_cipig)))
+print("From Other: "+str(other_sources))
