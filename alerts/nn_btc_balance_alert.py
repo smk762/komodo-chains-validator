@@ -113,16 +113,10 @@ def scan_balances():
         balances_dict.update({notary:{}})
         print("----- "+notary)
 
-        for chain in electrum_lib.main_coins:
+        for chain in ['BTC']:
             pubkey = notary_pubkeys[notary]
             addr = electrum_lib.get_addr_from_pubkey(pubkey, chain)
 
-            thread_list[notary].append(electrum_thread(chain, addr, pubkey, notary))
-
-        for chain in electrum_lib.third_party_coins:
-            pubkey = notary_pubkeys_3p[notary]
-            addr = electrum_lib.get_addr_from_pubkey(pubkey, chain)
-            
             thread_list[notary].append(electrum_thread(chain, addr, pubkey, notary))
 
         for thread in thread_list[notary]:
@@ -183,8 +177,10 @@ for notary in notaries:
                     }
                 })
 
+
 human_now = time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())
 time.ctime(now)
+
 messages = "*"*64+"\n"
 messages += "|"+'{:^62}'.format(season.replace('_', ' ').upper()+" NOTARY BALANCES REPORT: "+str(human_now))+"|\n"
 for notary in low_balances:
@@ -212,6 +208,21 @@ for chain in chain_fails:
 
 messages += "*"*20+'{:^24}'.format("REPORT ENDS")+"*"*20+"\n"
 logger.warning(messages)
+
+json_report = {
+    "low_balances":low_balances,
+    "time":int(time.time()),
+    "sources": {
+        "dexstats": list(set(from_dexstats)),
+        "electrums": list(set(from_cipig)),
+        "other": other_sources
+    },
+    "failed":chain_fails
+}
+
+with open('balances_report.json', 'w+') as j:
+    json.dump(json_report, j, indent = 4, sort_keys=True)
+
 
 print("From DexStats: "+str(set(from_dexstats)))
 print("From Cipig: "+str(set(from_cipig)))
