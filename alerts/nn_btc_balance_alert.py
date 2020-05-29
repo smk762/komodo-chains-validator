@@ -122,7 +122,7 @@ def scan_balances():
         for thread in thread_list[notary]:
             thread.start()
 
-        time.sleep(2)
+        time.sleep(1)
 
 scan_balances()
 
@@ -134,7 +134,7 @@ num_coins = len(electrum_lib.main_coins) + len(electrum_lib.third_party_coins)
 
 for notary in notaries:
     i = 0
-    while len(balances_dict[notary]) < num_coins:
+    while len(balances_dict[notary]) < 1:
         i += 1
         print("Waiting for balances dict chains to populate for "+notary+"..."+str(len(balances_dict[notary]))+"/"+str(num_coins)+" complete....")
         time.sleep(3)
