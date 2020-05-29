@@ -122,7 +122,7 @@ def scan_balances():
         for thread in thread_list[notary]:
             thread.start()
 
-        time.sleep(1)
+        time.sleep(0.3)
 
 scan_balances()
 
