@@ -6,3 +6,4 @@ pyTelegramBotAPI
 python-telegram-bot
 base58
 python-bitcoinlib
+ecdsa
