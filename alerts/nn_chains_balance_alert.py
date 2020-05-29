@@ -197,7 +197,7 @@ for notary in low_balances:
         address = low_balances[notary][chain]["address"]
         balance = low_balances[notary][chain]["balance"]
         messages += "|"+'{:^62}'.format('{:^10}'.format(chain)+"|"+'{:^36}'.format(address)+" | "+'{:^10}'.format(str(balance)))+"|\n"
-        if len(messages) > 4000:
+        if len(messages) > 3800:
             print(len(messages))    
             logger.warning(messages)
             messages = ''
@@ -207,7 +207,7 @@ for chain in chain_fails:
     num_fails = len(chain_fails[chain])
     if num_fails > 0:
         messages += "|"+'{:^62}'.format('{:^10}'.format('')+"|"+'{:^36}'.format(str(num_fails)+" failed queries for "+chain).upper()+" | "+'{:^10}'.format(''))+"|\n"
-        if len(messages) > 4000:
+        if len(messages) > 3800:
             print(len(messages))
             logger.warning(messages)
             messages = ''
