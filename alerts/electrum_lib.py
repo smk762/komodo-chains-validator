@@ -95,9 +95,9 @@ for line in lines:
         else:
             logger.info("UNRECOGNISED SERVER VALUE: "+server)
 
+antara_coins = main_coins[:]+['HUSH3', 'CHIPS', 'MCL']
 main_coins = main_coins[:]+['BTC']
 third_party_coins = third_party_coins[:]+['KMD']
-antara_coins = main_coins[:]+['HUSH3', 'CHIPS', 'MCL']
 all_coins = third_party_coins[:]+main_coins
 
 main_coins.sort()
