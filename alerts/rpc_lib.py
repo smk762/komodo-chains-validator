@@ -11,6 +11,8 @@ import requests
 import subprocess
 from slickrpc import Proxy
 
+logger = logging.getLogger(__name__)
+
 r = requests.get('http://notary.earth:8762/api/info/coins/?dpow_active=1')
 
 dpow_coins_info = r.json()['results'][0]
