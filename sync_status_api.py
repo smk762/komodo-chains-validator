@@ -166,6 +166,12 @@ async def show_sync_node_data():
 async def chains_monitored():
     return {"version": "0.0.2"}
 
+@app.get("/nn_balances_report")
+async def nn_balances_report():
+    with open('/var/www/html/balances_report.json') as f:
+        data = json.load(f)
+    return data
+
 @app.get("/node_sync_stats/{node_name}")
 async def node_sync_stats(node_name: str = "ALL"):
     return {"version": "0.0.2"}
