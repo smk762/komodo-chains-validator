@@ -203,9 +203,11 @@ for notary in low_balances:
             messages = ''
 
 messages += "*"*64+"\n"
+failed = {}
 for chain in chain_fails:
     num_fails = len(chain_fails[chain])
     if num_fails > 0:
+        failed.update({chain:chain_fails[chain]})
         messages += "|"+'{:^62}'.format('{:^10}'.format('')+"|"+'{:^36}'.format(str(num_fails)+" failed queries for "+chain).upper()+" | "+'{:^10}'.format(''))+"|\n"
         if len(messages) > 3800:
             print(len(messages))
@@ -221,9 +223,9 @@ json_report = {
     "sources": {
         "dexstats": list(set(from_dexstats)),
         "electrums": list(set(from_cipig)),
-        "other": other_sources
-    },
-    "failed":chain_fails
+        "other": other_sources,
+        "failed":failed
+    }
 }
 
 with open('balances_report.json', 'w+') as j:
