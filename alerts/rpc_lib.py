@@ -13,12 +13,6 @@ from slickrpc import Proxy
 
 logger = logging.getLogger(__name__)
 
-r = requests.get('http://notary.earth:8762/api/info/coins/?dpow_active=1')
-
-dpow_coins_info = r.json()['results'][0]
-dpow_tickers = []
-for ticker in dpow_coins_info:
-    dpow_tickers.append(ticker)
 
 def colorize(string, color):
     colors = {
@@ -79,8 +73,14 @@ def def_credentials(chain):
         print(colorize(errmsg, 'red'))
         exit(1)
 
+r = requests.get('http://notary.earth:8762/api/info/coins/?dpow_active=1')
+
+dpow_coins_info = r.json()['results'][0]
+dpow_tickers = []
+for ticker in dpow_coins_info:
+    dpow_tickers.append(ticker)
+
 for ticker in dpow_tickers:
     globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
 
-for ticker in dpow_tickers:
-    print(globals()["assetchain_proxy_{}".format(ticker)].getinfo())
+
