@@ -12,6 +12,11 @@ import shutil
 from . import oraclelib
 import logging
 
+from dotenv import load_dotenv
+load_dotenv()
+
+BB_PK = os.getenv("BB_PK")
+
 main_server_only = False
 
 logger = logging.getLogger(__name__)
@@ -24,9 +29,9 @@ for ticker in dpow_coins_info:
     if main_server_only:
         if dpow_coins_info[ticker]['dpow']['server'] == 'dPoW-mainnet':
             dpow_tickers.append(ticker)
-    else: 
+    else:
         dpow_tickers.append(ticker)
-        
+
 if 'BTC' in dpow_tickers:
     dpow_tickers.remove('BTC')
 logger.info("dpow_tickers: "+str(dpow_tickers))
@@ -297,6 +302,7 @@ def restart_ticker(ticker):
         logger.info("restarting "+ticker)
         ticker_launch = dpow_coins_info[ticker]['dpow']['launch_params'] \
                         .replace("~",os.environ['HOME']).split(' ')
+        ticker_launch.append("-pubkey=02f11935abd012966fa44f8fc687115ee813a73100c286c49c7d1a8b4478a2dde6")
         ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
         subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
         logger.info("sleeping 30 sec")
@@ -304,6 +310,7 @@ def restart_ticker(ticker):
         logger.info("Setting RPC for "+ticker)
         globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
         logger.debug("globals: "+str(globals()))
+        globals()["assetchain_proxy_{}".format(ticker)].importprivkey(BB_PK)
     except Exception as e:
         logger.debug("error restarting ticker "+ticker+": "+str(e))
 
