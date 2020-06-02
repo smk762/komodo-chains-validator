@@ -1,6 +1,6 @@
 import sys
 import time
-from lib import validation_lib
+from lib import validator_lib
 import logging
 logger = logging.getLogger()
 formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s', datefmt='%d-%b-%y %H:%M:%S')
@@ -23,7 +23,7 @@ def main():
         time.sleep(1)
         logger.warning("Use Ctl-C to exit... you have "+str(10-i)+" seconds...")
     while True:
-        validation_lib.sim_chains_start_and_sync()
+        validator_lib.sim_chains_start_and_sync()
 
 if __name__ == '__main__':
     main()

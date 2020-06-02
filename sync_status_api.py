@@ -8,7 +8,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from threading import Thread
 #import sqlite3
 import datetime
-from lib import validation_lib, oraclelib
+from lib import validator_lib, oraclelib
 import uvicorn
 import uvicorn.protocols
 import uvicorn.lifespan
@@ -57,7 +57,7 @@ async def show_hashtips():
 
 @app.get("/show_sync_node_data")
 async def show_sync_node_data():
-    return validation_lib.get_sync_node_data()
+    return validator_lib.get_sync_node_data()
 
 @app.get("/chains_monitored")
 async def chains_monitored():
