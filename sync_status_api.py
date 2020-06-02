@@ -57,7 +57,9 @@ async def show_hashtips():
 
 @app.get("/show_sync_node_data")
 async def show_sync_node_data():
-    return validator_lib.get_sync_node_data()
+    with open('/var/www/html/global_sync.json') as f:
+        data = json.load(f)
+    return data
 
 @app.get("/chains_monitored")
 async def chains_monitored():

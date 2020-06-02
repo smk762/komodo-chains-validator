@@ -14,8 +14,9 @@ import logging
 from dotenv import load_dotenv
 load_dotenv()
 
+print("Getting BB envars...")
 BB_PK = os.getenv("BB_PK")
-BB_PK = os.getenv("BB_PUB")
+BB_PUB = os.getenv("BB_PUB")
 
 main_server_only = False
 
@@ -61,6 +62,23 @@ def colorize(string, color):
     else:
         return colors[color] + str(string) + '\033[0m'
 
+def get_dexstats_balance(chain, addr):
+    url = 'http://'+chain.lower()+'.explorer.dexstats.info/insight-api-komodo/addr/'+addr
+    r = requests.get(url)
+    balance = r.json()['balance']
+    return balance
+
+def get_dexstats_blockhash(chain, block_ht):
+    url = 'http://'+chain.lower()+'.explorer.dexstats.info/insight-api-komodo/block-index/'+str(block_ht)
+    r = requests.get(url)
+    hash = r.json()['blockHash']
+    return hash
+
+def get_dexstats_sync(chain):
+    url = 'http://'+chain.lower()+'.explorer.dexstats.info/insight-api-komodo/sync'
+    r = requests.get(url)
+    return r.json()
+
 def def_credentials(chain):
     rpcport = '';
     operating_system = platform.system()
@@ -85,8 +103,7 @@ def def_credentials(chain):
         conf_file = path_file[1]
         if os.path.isfile(os.environ['HOME']+'/komodo-chains-validator/confs/'+conf_file):
             shutil.copyfile(os.environ['HOME']+'/komodo-chains-validator/confs/'+conf_file, coin_config_file)
-    if os.path.isfile(coin_config_file):        
-        logger.info("is file")
+    if os.path.isfile(coin_config_file):
         with open(coin_config_file, 'r') as f:
             for line in f:
                 l = line.rstrip()
@@ -116,12 +133,6 @@ for ticker in dpow_tickers:
 
 kmd_dir = os.environ['HOME'] + '/.komodo'
 
-if not os.path.isfile(sys.path[0]+'/chains_status/global_sync.json'):
-    sync_status = {}
-else:
-    with open(sys.path[0]+'/chains_status/global_sync.json', 'r') as fp:
-        sync_status = json.loads(fp.read())
-
 # sync chains
 def sim_chains_start_and_sync():
     # start with creating a proxy for each assetchain
@@ -129,50 +140,8 @@ def sim_chains_start_and_sync():
         # 60 sec wait during restart for getting rpc credentials
         # 60 sec * approx. 40 chains = 40 min to start
         restart_ticker(ticker)
-        if ticker not in sync_status:
-            sync_status.update({ticker:{}})
     while True:
-        for ticker in dpow_tickers:
-            try:
-                ticker_rpc = rpc[ticker]
-                ticker_timestamp = int(time.time())
-                sync_status[ticker].update({"last_updated":ticker_timestamp})
-                get_info_result = ticker_rpc.getinfo()
-                sync_status[ticker].update({
-                        "blocks":get_info_result["blocks"],
-                        "longestchain":get_info_result["longestchain"]
-                    })
-                if get_info_result["blocks"] < get_info_result["longestchain"] or get_info_result["longestchain"] == 0:
-                    logger.info(colorize("Chain " + ticker + " is NOT synced."
-                                 + " Blocks: " + str(get_info_result["blocks"]) 
-                                 + " Longestchain: " + str(get_info_result["longestchain"]),
-                                   "red"))
-                else:
-                    logger.info(colorize("Chain " + ticker + " is synced."
-                                + " Blocks: " + str(get_info_result["blocks"])
-                                + " Longestchain: " + str(get_info_result["longestchain"])
-                                + " Latest Blockhash: " + ticker_rpc.getblock(str(get_info_result["blocks"]))["hash"],
-                                  "green"))
-                    latest_block_fifth = int(math.floor(get_info_result["longestchain"]/5)*5)
-                    latest_block_fifth_hash = ticker_rpc.getblock(str(latest_block_fifth))["hash"]
-                    sync_status[ticker].update({
-                            "last_longesthash":latest_block_fifth_hash,
-                            "last_longestchain":latest_block_fifth
-                        })
-                    # save timestamped file for ticker if synced
-                    filename = ticker+'_sync_'+str(ticker_timestamp)+'.json'
-                    with open(sys.path[0]+'/chains_status/' + filename, 'w+') as fp:
-                        json.dump(sync_status[ticker], fp, indent=4)
-                    logger.info("Saved "+ticker+" sync data to " + filename)
-                    clean_chain_data(ticker)
-                    restart_ticker(ticker)
-            except Exception as e:
-                logger.info(e)
-        # save global state file
-        sync_status.update({"last_updated":ticker_timestamp})
-        with open(sys.path[0]+'/chains_status/global_sync.json', 'w+') as fp:
-            json.dump(sync_status, fp, indent=4)
-        logger.info("Saved global state data to global_sync.json")
+        dpow_getsync()
         # loop again in 15 min
         time.sleep(900)
     return True
@@ -182,7 +151,7 @@ def clean_chain_data(ticker):
     stop_result = rpc[ticker].stop()
     logger.info(ticker + " stopped!")
     time.sleep(30)
-    
+
     conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
     path_file = os.path.split(conf_filepath)
     conf_path = path_file[0]
@@ -201,93 +170,137 @@ def clean_chain_data(ticker):
 
 def restart_ticker(ticker):
     try:
-        logger.info("restarting "+ticker)
-        ticker_launch = dpow_coins_info[ticker]['dpow']['launch_params'] \
-                        .replace("~",os.environ['HOME']).split(' ')
-        # launch with pubkey so balance bot unspent returns to correct address.
-        ticker_launch.append("-pubkey="+BB_PUB)
-        ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
-        subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
-        logger.info("sleeping 60 sec")
-        time.sleep(60)
-        # set RPC proxy and import PK
-        logger.info("Setting RPC for "+ticker)
         rpc[ticker] = def_credentials(ticker)
-        rpc[ticker].importprivkey(BB_PK)
+        rpc[ticker].getinfo()
+        restart = False
     except Exception as e:
-        logger.debug("error restarting ticker "+ticker+": "+str(e))
+        print(ticker+" not running")
+        print(e)
+        restart = True
+    if restart:
+        try:
+            logger.info("restarting "+ticker)
+            ticker_launch = dpow_coins_info[ticker]['dpow']['launch_params'] \
+                            .replace("~",os.environ['HOME']).split(' ')
+            # launch with pubkey so balance bot unspent returns to correct address.
+            ticker_launch.append("-pubkey="+BB_PUB)
+            ticker_output = open(sys.path[0]+'/ticker_output/'+ticker+"_output.log",'w+')
+            subprocess.Popen(ticker_launch, stdout=ticker_output, stderr=ticker_output, universal_newlines=True)
+            logger.info("sleeping 60 sec")
+            time.sleep(60)
+            # set RPC proxy and import PK
+            logger.info("Setting RPC for "+ticker)
+            rpc[ticker] = def_credentials(ticker)
+            rpc[ticker].importprivkey(BB_PK)
+        except Exception as e:
+            logger.debug("error restarting ticker "+ticker+": "+str(e))
 
 def get_sync_node_data():
     # Get sync node's latest hashes
     sync_data = {}
-    if os.path.exists(sys.path[0]+'/chains_status/global_sync.json'):
-        with open(sys.path[0]+'/chains_status/global_sync.json', 'w+') as f:
-            json.dump(sync_data, f, indent=4)
+    if os.path.exists('/var/www/html/global_sync.json'):
+        with open('/var/www/html/global_sync.json', 'r') as fp:
+            sync_data = json.loads(fp.read())
+    else:
+        print('/var/www/html/global_sync.json')
+        print("global_sync.json not found!")
     return sync_data
 
-def report_nn_tip_hashes():
-    # start with creating a proxy for each assetchain
+def dpow_getinfo():
+    non_responsive = []
     for ticker in dpow_tickers:
-        rpc[ticker] = def_credentials(ticker)
-        sync_status.update({ticker:{}})
-    this_node_update_time = 0
-    while True:
-        # read sync node data
-        sync_data = get_sync_node_data()
-        sync_node_update_time = sync_data['last_updated']
-        for ticker in dpow_tickers:
-            try:
-                # compare sync node hash to local hash
-                sync_ticker_data = sync_data[ticker]
-                sync_ticker_block = sync_ticker_data['last_longestchain']
-                sync_ticker_hash = sync_ticker_data['last_longesthash']
-                ticker_rpc = rpc[ticker]
-                ticker_timestamp = int(time.time())
-                sync_status[ticker].update({"last_updated":ticker_timestamp})
-                get_info_result = ticker_rpc.getinfo()
-                sync_status[ticker].update({
-                        "blocks":get_info_result["blocks"],
-                        "longestchain":get_info_result["longestchain"]
-                    })
-                if get_info_result["blocks"] < get_info_result["longestchain"]:
-                    logger.info(colorize("Chain " + ticker + " is NOT synced."
-                                + " Blocks: " + str(get_info_result["blocks"])
-                                + " Longestchain: "+ str(get_info_result["longestchain"]),
-                                  "red"))
-                else:
-                    logger.info(colorize("Chain " + ticker + " is synced."
-                                + " Blocks: " + str(get_info_result["blocks"])
-                                + " Longestchain: " + str(get_info_result["longestchain"])
-                                + " Latest Blockhash: " + ticker_rpc.getblock(str(get_info_result["blocks"]))["hash"],
-                                  "green"))
-                    ticker_sync_block_hash = ticker_rpc.getblock(str(sync_ticker_block))["hash"]
-                    sync_status[ticker].update({
-                            "last_longesthash":ticker_sync_block_hash,
-                            "last_longestchain":sync_ticker_block
-                        })
-                if ticker_sync_block_hash == sync_ticker_hash:
-                    # all good
-                    logger.info(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] MATCHING! ", 'green'))
-                    logger.info(colorize("Hash: ["+sync_ticker_hash+"]", 'green'))
-                else:
-                    # possible fork
-                    logger.warning(colorize("Sync node comparison for "+ticker+" block ["+str(sync_ticker_block)+"] FAILED! ", "red"))
-                    logger.warning(colorize("Sync node hash: ["+sync_ticker_hash+"]", 'red'))
-                    logger.warning(colorize("Notary node hash: ["+ticker_sync_block_hash+"]", 'red'))
-            except Exception as e:
-                logger.warning(ticker+" error: "+str(e))
-                logger.info(ticker+" sync data: "+str(sync_ticker_data))
-            time.sleep(1)
-        # save global state file
-        sync_status.update({"last_updated":ticker_timestamp})
-        with open(sys.path[0]+'/chains_status/global_sync.json', 'w+') as fp:
-            json.dump(sync_status, fp, indent=4)
-        logger.info("Saved global state data to global_sync.json")
-        time.sleep(600)
-    return True
+        try:
+            rpc[ticker] = def_credentials(ticker)
+            print(rpc[ticker].getinfo())
+        except:
+            print(ticker+" not responding!")
+            non_responsive.append(ticker)
+    print("Non-responsive: "+str(non_responsive))
 
-# last sync'd at time/block
-# time taken to sync
-# time since restart
-# current sync pct
-# current block
+def get_explorer_blockhash(ticker, block):
+    pass
+
+def get_electrum_blockhash(ticker, block):
+    pass
+
+
+def dpow_getsync():
+    non_responsive = []
+    sync_data = get_sync_node_data()
+    now = int(time.time())
+    sync_data.update({"last_updated":now})
+    sync_data.update({"last_updated_time":time.ctime(now)})
+
+    for ticker in dpow_tickers:
+        if ticker not in sync_data:
+            sync_data.update({ticker:{}})
+        try:
+            rpc[ticker] = def_credentials(ticker)
+            info = rpc[ticker].getinfo()
+            sync_data[ticker].update({
+                "blocks":info["blocks"],
+                "balance":info["balance"]
+            })
+            longestchain = rpc[ticker].getblockcount()
+            if longestchain != 0:
+                sync_data[ticker].update({
+                    "longestchain":longestchain,
+                })
+            elif longestchain == info["blocks"]:
+                if "last_sync_time" in sync_data[ticker]:
+                    time_to_sync = info["tiptime"] - sync_data[ticker]["last_sync_time"]
+                    sync_data[ticker].update({
+                        "last_sync_duration":time_to_sync
+                    })
+
+                sync_data[ticker].update({
+                    "last_sync_block":info["blocks"],
+                    "last_sync_timestamp":info["tiptime"],
+                    "last_sync_time":time.ctime(info["tiptime"])
+
+                })
+                sync_blockhash =  rpc[ticker].getblock(info["blocks"])["hash"]
+                sync_data[ticker].update({
+                    "last_sync_blockhash": sync_blockhash
+                })
+                # restart sync of this chain
+                logger.info(ticker+" sync'd, restarting")
+                clean_chain_data(ticker)
+                restart_ticker(ticker)
+
+            if "pubkey" in info:
+                sync_data[ticker].update({
+                    "pubkey":info["pubkey"]
+                })
+            else:
+                sync_data[ticker].update({
+                    "pubkey":"not set"
+                })
+
+        except Exception as e:
+            print(ticker+" not responding!")
+            print(e)
+            non_responsive.append(ticker)
+    try:
+        dexhash = get_dexstats_blockhash(ticker, info["blocks"])
+        sync_data[ticker].update({
+            "dexhash":dexhash
+        })
+    except:
+        print(ticker+" not avaiable on dexstats")
+        sync_data[ticker].update({
+            "dexhash":"no data"
+        })
+
+
+
+    # restart unresponsive chains
+    sync_data.update({"last_unresponsive":non_responsive})
+    for ticker in non_responsive:
+        logger.info(ticker+" unresponsive, restarting")
+        restart_ticker(ticker)
+
+    # write out sync data to file
+    with open('/var/www/html/global_sync.json', 'w+') as f:
+        json.dump(sync_data, f, indent=4)
+
