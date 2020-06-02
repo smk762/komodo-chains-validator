@@ -167,7 +167,7 @@ for notary in notaries:
 
         if balance == -1:
             chain_fails[chain].append(notary)
-        elif float(balance) < 0.01:
+        elif float(balance) < 0.03:
             if notary not in low_balances:
                 low_balances.update({notary:{}})
             low_balances[notary].update({
@@ -220,8 +220,6 @@ json_report = {
     "failed":chain_fails
 }
 
-with open('balances_report.json', 'w+') as j:
-    json.dump(json_report, j, indent = 4, sort_keys=True)
 
 
 print("From DexStats: "+str(set(from_dexstats)))

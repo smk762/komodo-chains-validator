@@ -289,7 +289,13 @@ def clean_chain_data(ticker):
     conf_file = path_file[1]
     print(conf_file)
 
-    shutil.rmtree(conf_path)
+    shutil.rmtree(conf_path+"/blocks")
+    shutil.rmtree(conf_path+"/database")
+    shutil.rmtree(conf_path+"/chainstate")
+    shutil.rmtree(conf_path+"/notarisations")
+
+
+
     logger.info(conf_path+" deleted")
     # some 3P chains do not create a conf, will need to do this manually by copying ./confs/{chain}.conf into required folder.
     os.makedirs(conf_path)

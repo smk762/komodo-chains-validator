@@ -172,6 +172,19 @@ async def nn_balances_report():
         data = json.load(f)
     return data
 
+@app.get("/nn_balances_deltas")
+async def nn_balances_deltas():
+    with open('/var/www/html/balances_deltas.json') as f:
+        data = json.load(f)
+    return data
+
+@app.get("/nn_funding")
+async def nn_funding():
+    with open('/var/www/html/notary_funds.json') as f:
+        data = json.load(f)
+    return data
+
+
 @app.get("/node_sync_stats/{node_name}")
 async def node_sync_stats(node_name: str = "ALL"):
     return {"version": "0.0.2"}

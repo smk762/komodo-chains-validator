@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os 
+import os
 import re
 import sys
 import json
@@ -9,10 +9,16 @@ import logging
 import platform
 import requests
 import subprocess
+import datetime
+from datetime import datetime as dt
 from slickrpc import Proxy
 
+from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
+load_dotenv()
 
+BB_PK = os.getenv("BB_PK")
+BB_ADDR = os.getenv("BB_ADDR")
 
 def colorize(string, color):
     colors = {
@@ -80,7 +86,58 @@ dpow_tickers = []
 for ticker in dpow_coins_info:
     dpow_tickers.append(ticker)
 
-for ticker in dpow_tickers:
-    globals()["assetchain_proxy_{}".format(ticker)] = def_credentials(ticker)
+rpc = {}
 
+for ticker in dpow_tickers:
+    # ignoring btc, not enough space on this server
+    if ticker != 'BTC':
+        rpc.update({ticker:def_credentials(ticker)})
+
+
+# need to add dict for start block for each chain.
+def get_ntx_txids(ticker, addr, start, end):
+    return rpc[ticker].getaddresstxids({"addresses": [BB_ADDR], "start":start, "end":end})
+
+def get_balance_bot_data(chain, txid):
+    inputs = {}
+    outputs = {}
+    while True:
+        try:
+           raw_tx = rpc[chain].getrawtransaction(txid,1)
+           break
+        except:
+           time.sleep(1)
+    src_addr = raw_tx["vin"][0]["address"]
+    inputs.update({src_addr:raw_tx["vin"][0]["valueSat"]})
+    if src_addr == BB_ADDR:
+        block_hash = raw_tx['blockhash']
+        block_time = raw_tx['blocktime']
+        block_datetime = dt.utcfromtimestamp(raw_tx['blocktime'])
+        this_block_height = raw_tx['height']
+        vouts = raw_tx["vout"]
+
+        for vout in vouts:
+            addr = vout['scriptPubKey']['addresses'][0]
+            outputs.update({addr:vout['valueSat']})
+
+    return calc_balance_delta(inputs, outputs)
+
+def calc_balance_delta(inputs, outputs):
+    deltas = {}
+    for addr in inputs:
+        if addr not in deltas:
+            val = inputs[addr]
+            deltas.update({addr:-1*val})
+        else:
+            val = deltas[addr]-inputs[addr]
+            deltas.update({addr:val})
+
+    for addr in outputs:
+        if addr not in deltas:
+            val = outputs[addr]
+            deltas.update({addr:val})
+        else:
+            val = deltas[addr]+outputs[addr]
+            deltas.update({addr:val})
+    return deltas
 
