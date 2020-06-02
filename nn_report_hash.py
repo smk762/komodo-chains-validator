@@ -1,4 +1,4 @@
-from lib import validator_lib
+from lib import validation_lib
 import logging
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 def main():
     while True:
-        validator_lib.report_nn_tip_hashes()
+        validation_lib.report_nn_tip_hashes()
 
 if __name__ == '__main__':
     main()
