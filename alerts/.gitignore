@@ -1,3 +1,5 @@
 balances_report.json
 .env
 balances_deltas.json
+notary_funds.json
+start_blocks.json
