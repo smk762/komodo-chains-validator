@@ -161,6 +161,7 @@ from_cipig = []
 other_sources = {}
 chain_fails = {}
 low_balances = {}
+balance_threshold = 0.03
 for notary in notaries:
     for chain in balances_dict[notary]:
         if chain not in chain_fails:
@@ -179,7 +180,7 @@ for notary in notaries:
 
         if balance == -1:
             chain_fails[chain].append(notary)
-        elif float(balance) <= 0.03:
+        elif float(balance) <= balance_threshold:
             if notary not in low_balances:
                 low_balances.update({notary:{}})
             low_balances[notary].update({
@@ -248,63 +249,3 @@ balance_data = {
 with open(os.path.dirname(os.path.abspath(__file__))+'/balances_report.json', 'w+') as j:
     json.dump(balance_data, j, indent = 4, sort_keys=True)
 
-# make bot payments 
-bot_balances = {}
-for notary in balance_data['low_balances']:
-    for chain in balance_data['low_balances'][notary]:
-        balance = balance_data['low_balances'][notary][chain]['balance']
-        address = balance_data['low_balances'][notary][chain]['address']
-        if chain != 'BTC':
-            print("["+notary+"] ["+chain+"] ["+str(balance)+"] ["+address+"]")
-
-            # import privkey in case chain restarted, then send
-            try:
-                rpc[chain].importprivkey(BB_PK)
-                txid = rpc[chain].sendtoaddress(address, 0.03)
-                print("Top up for "+chain+" sent to "+notary)
-                print("TXID: "+txid)
-                while txid not in rpc[chain].getrawmempool():
-                    time.sleep(1)
-            except Exception as e:
-                print("TOP UP ERR: "+str(e))
-
-# Check outgoing transactions from balance bot address
-bot_balances = {}
-balance_deltas = {}
-
-for chain in dpow_tickers:
-    balance_deltas.update({chain:{}})
-    txid_balance_deltas = {}
-    try:
-        block_ht = rpc[chain].getblockcount()
-        balance = rpc[chain].getbalance()
-        bot_balances.update({chain:balance})
-
-        address_txids = rpc[chain].getaddresstxids({"addresses": [BB_ADDR], "start":0, "end":block_ht})
-        print("Scanning "+chain+" txids fom funding address...")
-        print(str(len(address_txids))+" returned.")
-
-        for txid in address_txids:
-            txid_balance_deltas = rpc_lib.get_balance_bot_data(chain, txid)
-
-            for address in txid_balance_deltas:
-                print("Updating "+address+" balance deltas")
-                if address not in balance_deltas:
-                    balance_deltas[chain].update({address:txid_balance_deltas[address]})
-                else:
-                    val = txid_balance_deltas[address] + balance_deltas[chain][address]
-                    balance_deltas[chain].update({address:val})
-
-    except Exception as e:
-        print(chain+" delta calc failed: "+ str(e))
-
-with open(os.path.dirname(os.path.abspath(__file__))+'/balances_deltas.json', 'w+') as j:
-    json.dump(balance_deltas, j, indent = 4, sort_keys=True)
-
-with open(os.path.dirname(os.path.abspath(__file__))+'/notary_funds.json', 'w+') as j:
-    json.dump(bot_balances, j, indent = 4, sort_keys=True)
-
-
-print("From DexStats: "+str(set(from_dexstats)))
-print("From Cipig: "+str(set(from_cipig)))
-print("From Other: "+str(other_sources))
