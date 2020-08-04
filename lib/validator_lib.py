@@ -28,7 +28,7 @@ dpow_coins_info = r.json()['results'][0]
 dpow_tickers = []
 for ticker in dpow_coins_info:
     if main_server_only:
-        if dpow_coins_info[ticker]['dpow']['server'] == 'dPoW-mainnet':
+        if dpow_coins_info[ticker]['dpow']['server'].lower() == 'dpow-mainnet':
             dpow_tickers.append(ticker)
     else:
         dpow_tickers.append(ticker)
@@ -93,11 +93,14 @@ def def_credentials(chain):
             coin_config_file = str(dpow_coins_info[chain]['dpow']['conf_path'].replace("~",os.environ['HOME']))
         else:
             logger.warning("Conf path not in dpow info for "+chain)
+            coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
+
     elif chain == 'KMD':
         coin_config_file = str(ac_dir + '/komodo.conf')
     else:
         coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
     if not os.path.isfile(coin_config_file):
+        print(coin_config_file)
         conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
         path_file = os.path.split(os.path.abspath(conf_filepath))
         conf_file = path_file[1]
@@ -129,7 +132,10 @@ def def_credentials(chain):
 
 rpc = {}
 for ticker in dpow_tickers:
-    rpc[ticker] = def_credentials(ticker)
+    try:
+        rpc[ticker] = def_credentials(ticker)
+    except:
+        print("RPC proxy for "+ticker+" failed")
 
 kmd_dir = os.environ['HOME'] + '/.komodo'
 
@@ -154,14 +160,19 @@ def clean_chain_data(ticker):
 
     conf_filepath = dpow_coins_info[ticker]['dpow']['conf_path']
     path_file = os.path.split(conf_filepath)
-    conf_path = path_file[0]
+    conf_path = path_file[0].replace("~",os.environ['HOME'])
     conf_file = path_file[1]
 
     # not removing confs or wallets
-    shutil.rmtree(conf_path+"/blocks")
-    shutil.rmtree(conf_path+"/database")
-    shutil.rmtree(conf_path+"/chainstate")
-    shutil.rmtree(conf_path+"/notarisations")
+    if os.path.exists(conf_path+"/blocks"):
+        shutil.rmtree(conf_path+"/blocks")
+
+    if os.path.exists(conf_path+"/database"):
+        shutil.rmtree(conf_path+"/database")
+    if os.path.exists(conf_path+"/chainstate"):
+        shutil.rmtree(conf_path+"/chainstate")
+    if os.path.exists(conf_path+"/notarisations"):
+        shutil.rmtree(conf_path+"/notarisations")
 
     logger.info(conf_path+" subfolders deleted")
     # some 3P chains do not create a conf, will need to do this manually by copying ./confs/{chain}.conf into required folder.
@@ -241,25 +252,37 @@ def dpow_getsync():
                 "blocks":info["blocks"],
                 "balance":info["balance"]
             })
-            longestchain = rpc[ticker].getblockcount()
+            if "longestchain" in info:
+                longestchain = info["longestchain"]
+            else:
+
+                longestchain = rpc[ticker].getblockchaininfo()["headers"]
             if longestchain != 0:
                 sync_data[ticker].update({
                     "longestchain":longestchain,
                 })
-            elif longestchain == info["blocks"]:
+            if longestchain == info["blocks"] and longestchain !=0:
+                print(ticker+" sync'd on block "+str(longestchain))
                 if "last_sync_time" in sync_data[ticker]:
-                    time_to_sync = info["tiptime"] - sync_data[ticker]["last_sync_time"]
-                    sync_data[ticker].update({
-                        "last_sync_duration":time_to_sync
-                    })
+                    if 'tiptime' in info:
+                        time_to_sync = int(info["tiptime"]) - int(sync_data[ticker]["last_sync_timestamp"])
+                        sync_data[ticker].update({
+                            "last_sync_duration":time_to_sync
+                        })
 
                 sync_data[ticker].update({
-                    "last_sync_block":info["blocks"],
-                    "last_sync_timestamp":info["tiptime"],
-                    "last_sync_time":time.ctime(info["tiptime"])
-
+                    "last_sync_block":info["blocks"]
                 })
-                sync_blockhash =  rpc[ticker].getblock(info["blocks"])["hash"]
+                if 'tiptime' in info:
+                    sync_data[ticker].update({
+                        "last_sync_timestamp":info["tiptime"],
+                        "last_sync_time":time.ctime(info["tiptime"])
+
+                    })
+                if ticker in ['AYA', 'GAME', 'GIN', 'EMC2', 'CHIPS']:
+                    sync_blockhash = rpc[ticker].getblockhash(int(info["blocks"]))
+                else:
+                    sync_blockhash = rpc[ticker].getblock(str(info["blocks"]))["hash"]
                 sync_data[ticker].update({
                     "last_sync_blockhash": sync_blockhash
                 })
@@ -281,16 +304,17 @@ def dpow_getsync():
             print(ticker+" not responding!")
             print(e)
             non_responsive.append(ticker)
-    try:
-        dexhash = get_dexstats_blockhash(ticker, info["blocks"])
-        sync_data[ticker].update({
-            "dexhash":dexhash
-        })
-    except:
-        print(ticker+" not avaiable on dexstats")
-        sync_data[ticker].update({
-            "dexhash":"no data"
-        })
+        try:
+            dexhash = get_dexstats_blockhash(ticker, sync_data[ticker]["last_sync_block"])
+            sync_data[ticker].update({
+                "last_sync_dexhash":dexhash
+            })
+        except Exception as e:
+            print(ticker+" not avaiable on dexstats")
+            print(e)
+            sync_data[ticker].update({
+                "last_sync_dexhash":"no data"
+            })
 
 
 
@@ -302,5 +326,5 @@ def dpow_getsync():
 
     # write out sync data to file
     with open('/var/www/html/global_sync.json', 'w+') as f:
-        json.dump(sync_data, f, indent=4)
+        json.dump(sync_data, f, indent=4, sort_keys=True)
 

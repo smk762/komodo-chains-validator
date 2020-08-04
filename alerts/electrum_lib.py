@@ -74,28 +74,32 @@ coin_params = {
 }
 
 # Get 3rd party / main dPoW coins
-all_coins = []
-main_coins = []
-third_party_coins = []
 
-r = requests.get("https://raw.githubusercontent.com/KomodoPlatform/dPoW/master/README.md")
-dpow_readme = r.text
-lines = dpow_readme.splitlines()
-for line in lines:
-    if line.find('dPoW-mainnet') != -1 or line.find('dPoW-3P') != -1:
-        raw_info = line.split("|")
-        info = [i.strip() for i in raw_info]
-        coin = info[0]
-        server = info[4]
-        all_coins.append(coin)
-        if server.lower() == 'dpow-mainnet':
-            main_coins.append(coin)
-        elif server.lower() == 'dpow-3p':
-            third_party_coins.append(coin)
-        else:
-            logger.info("UNRECOGNISED SERVER VALUE: "+server)
+r = requests.get("http://notary.earth:8762/api/info/coins/?dpow_active=1")
+dpow_coins = r.json()['results'][0]
 
-antara_coins = main_coins[:]+['HUSH3', 'CHIPS', 'MCL']
+def get_mainnet_chains(coins_data):
+    main_chains = []
+    for coin in coins_data:
+        if coins_data[coin]['dpow']['server'].lower() == "dpow-mainnet":
+            main_chains.append(coin)
+    return main_chains
+
+def get_third_party_chains(coins_data):
+    third_chains = []
+    for coin in coins_data:
+        if coins_data[coin]['dpow']['server'].lower() == "dpow-3p":
+            third_chains.append(coin)
+    return third_chains
+
+main_coins = get_mainnet_chains(dpow_coins)
+third_party_coins = get_third_party_chains(dpow_coins)
+
+# third party coins with same base58 params as KMD
+antara_coins = main_coins[:]+['HUSH3', 'CHIPS', 'MCL', 'VRSC']
+if 'BTC' in antara_coins:
+    antara_coins.remove('BTC')
+
 main_coins = main_coins[:]+['BTC']
 third_party_coins = third_party_coins[:]+['KMD']
 all_coins = third_party_coins[:]+main_coins
@@ -109,7 +113,6 @@ for coin in antara_coins:
     coin_params.update({coin:KMD_CoinParams})
 
 electrums = {}
-r = requests.get('http://notary.earth:8762/api/info/coins/?dpow_active=1')
 coins_info = r.json()
 for coin in coins_info['results'][0]:
     if len(coins_info['results'][0][coin]['electrums']) > 0:

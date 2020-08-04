@@ -120,7 +120,7 @@ with open(os.path.dirname(os.path.abspath(__file__))+'/funding_tx.json', 'w+') a
 with open(os.path.dirname(os.path.abspath(__file__))+'/notary_funds.json', 'w+') as j:
     json.dump(bot_balances, j, indent = 4, sort_keys=True)
 
-
+funding_limit = 1
 
 funding_totals = {"fees":{}}
 now = int(time.time())
@@ -140,6 +140,13 @@ for item in funding_tx:
         else:
             val = funding_totals["fees"][item["chain"]]-item["fee"]
             funding_totals["fees"].update({item["chain"]:val})
+
+for address in funding_totals:
+    for chain in funding_totals[address]:
+        amount = funding_totals[address][chain]
+        reserve = funding_limit - amount
+
+
 
 with open(os.path.dirname(os.path.abspath(__file__))+'/funding_totals.json', 'w+') as j:
     json.dump(funding_totals, j, indent = 4, sort_keys=True)

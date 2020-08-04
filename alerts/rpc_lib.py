@@ -51,6 +51,7 @@ def def_credentials(chain):
             coin_config_file = str(dpow_coins_info[chain]['dpow']['conf_path'].replace("~",os.environ['HOME']))
         else:
             logger.warning("Conf path not in dpow info for "+chain)
+            coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
     elif chain == 'KMD':
         coin_config_file = str(ac_dir + '/komodo.conf')
     else:
@@ -84,7 +85,10 @@ r = requests.get('http://notary.earth:8762/api/info/coins/?dpow_active=1')
 dpow_coins_info = r.json()['results'][0]
 dpow_tickers = []
 for ticker in dpow_coins_info:
-    dpow_tickers.append(ticker)
+    try:
+        dpow_tickers.append(ticker)
+    except:
+        print("RPC for "+ticker+" failed")
 
 rpc = {}
 

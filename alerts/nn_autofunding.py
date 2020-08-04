@@ -108,6 +108,7 @@ top_up_amount = 0.05
 bot_balances = {}
 for notary in balance_data['low_balances']:
     for chain in balance_data['low_balances'][notary]:
+        print(chain)
         balance = balance_data['low_balances'][notary][chain]['balance']
         address = balance_data['low_balances'][notary][chain]['address']
         if chain != 'BTC':
@@ -125,7 +126,7 @@ for notary in balance_data['low_balances']:
                             while txid not in rpc[chain].getrawmempool():
                                 time.sleep(1)
                         except Exception as e:
-                            print("TOP UP ERR: "+str(e))
+                            print(chain+" TOP UP ERR: "+str(e))
 
 
 

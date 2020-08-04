@@ -143,19 +143,12 @@ while len(balances_dict) < len(notaries):
     time.sleep(3)
 
 num_coins = len(electrum_lib.main_coins) + len(electrum_lib.third_party_coins)
-coins_list = electrum_lib.main_coins+electrum_lib.third_party_coins
-coins_list.sort()
+
 for notary in notaries:
     i = 0
-    balance_list = list(balances_dict[notary].keys())
-    balance_list.sort()
-
-    missing_coins = [v for v in coins_list if v not in balance_list]
-    while len(missing_coins) > 0:
-        missing_coins = [v for v in coins_list if v not in balance_list]
+    while len(balances_dict[notary]) < num_coins:
         i += 1
         print("Waiting for balances dict chains to populate for "+notary+"..."+str(len(balances_dict[notary]))+"/"+str(num_coins)+" complete....")
-        print("Missing: "+str(missing_coins))
         time.sleep(3)
         if i > 20:
             print("Waited too long for "+notary+"... continuing anyway...")
@@ -224,7 +217,7 @@ for notary in low_balances:
         address = low_balances[notary][chain]["address"]
         balance = low_balances[notary][chain]["balance"]
         messages += "|"+'{:^62}'.format('{:^10}'.format(chain)+"|"+'{:^36}'.format(address)+" | "+'{:^10}'.format(str(balance)))+"|\n"
-        if len(messages) > 3600:
+        if len(messages) > 3800:
             print(len(messages))    
             logger.warning(messages)
             messages = ''
@@ -236,7 +229,7 @@ for chain in chain_fails:
     if num_fails > 0:
         failed.update({chain:chain_fails[chain]})
         messages += "|"+'{:^62}'.format('{:^10}'.format('')+"|"+'{:^36}'.format(str(num_fails)+" failed queries for "+chain).upper()+" | "+'{:^10}'.format(''))+"|\n"
-        if len(messages) > 3600:
+        if len(messages) > 3800:
             print(len(messages))
             logger.warning(messages)
             messages = ''
@@ -267,29 +260,3 @@ balance_data = {
 with open(os.path.dirname(os.path.abspath(__file__))+'/balances_report.json', 'w+') as j:
     json.dump(balance_data, j, indent = 4, sort_keys=True)
 
-balance_thresholds = {
-    "BTC": 0.05,
-    "AYA": 1,
-    "EMC2": 1,
-    "GAME": 1,
-    "OTHER": 0.05,
-}
-msg = ""
-for chain in balance_data["low_balance_chains"]:
-    sendmany = {}
-    if chain in balance_thresholds:
-        val = balance_thresholds[chain]
-    else:
-        val = balance_thresholds["OTHER"]
-    for notary in balance_data["low_balance_notaries"]:
-        if chain in balance_data["low_balances"][notary]:
-            sendmany.update({balance_data["low_balances"][notary][chain]["address"]:val})
-    try:
-        msg += chain+': sendmany "" "'+json.dumps(sendmany).replace('"', '\\"')+'"\n'
-        if len(msg) > 3600:
-            print(len(msg))
-            logger.warning(msg)
-            msg = ''
-    except:
-        pass
-logger.warning(msg)

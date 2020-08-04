@@ -83,6 +83,13 @@ async def nn_funding():
         data = json.load(f)
     return data
 
+@app.get("/funding_tx")
+async def nn_funding():
+    with open('/var/www/html/funding_tx.json') as f:
+        data = json.load(f)
+    return data
+
+
 @app.get("/chain_sync_stats/{ticker}")
 async def chain_sync_stats(ticker: str = "ALL"):
     return {"version": "0.0.2"}

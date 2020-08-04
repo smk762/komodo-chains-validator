@@ -31,14 +31,14 @@
         "CRYPTO": 0.56279124,
         "DEX": 0.74745993,
         "HUSH3": 4.87975,
-        "MGW": 2.0529810699999995,
+        "MGW": -0.37125404,
         "MORTY": 78.9182,
-        "OOT": 57.6561,
-        "PANGEA": 2.7759353000000004,
-        "REVS": 0.6273966,
-        "RFOX": 43.64775,
+        "OOT": 173.3298499999999,
+        "PANGEA": -0.6483370599999998,
+        "REVS": 0.6668877,
+        "RFOX": 67.04525,
         "RICK": 38.9182,
-        "THC": 57.6561,
+        "THC": -5.000000000000009,
         "ZILLA": 6.9182
     },
     "RKxxxxxxSyBMEm4uVzDnrZscYsoWutXDjm": {
@@ -51,7 +51,7 @@
         "MORTY": 0.060000000000000005,
         "OOT": 0.060000000000000005,
         "PANGEA": 0.031,
-        "REVS": 0.030000000000000002,
+        "REVS": 0.08,
         "RFOX": 0.060000000000000005,
         "RICK": 0.060000000000000005,
         "THC": 0.060000000000000005,
@@ -77,15 +77,15 @@
     },
     "RNsTpcUJEzn18eBP5WYH3or2zRhpXC7iae": {
         "COQUICASH": 0.118,
-        "OOT": 0.060000000000000005
+        "OOT": 1.2100000000000006
     },
     "RP4ti3no7PZh6EVi8JeiMxyEs8CuVK3uLi": {
         "HUSH3": 4.96995
     },
     "RPr9xBwyRUvsXd1DD1MVpkbmFs1UnB9rd4": {
         "DEX": 0.031,
-        "MGW": 0.030000000000000002,
-        "RFOX": 0.030000000000000002
+        "MGW": 0.18,
+        "RFOX": 0.27999999999999997
     },
     "RRumqyui4uxWHmf9AaN5PKgRwtmwYc2nze": {
         "DEX": 0.031
@@ -94,14 +94,14 @@
         "COQUICASH": 9.9397
     },
     "RSKDECKERyuopK3gd3SQHH9qkngsfWrjXy": {
-        "OOT": 0.030000000000000002,
+        "OOT": 0.18,
         "THC": 0.060000000000000005
     },
     "RTPBi5hpdSUARnh9gGahv6tr4ppHDwAkxD": {
         "MGW": 0.031
     },
     "RU2RqFrjwy4kauANnzK1JWyDVAx47z51qw": {
-        "PANGEA": 0.031
+        "PANGEA": 0.23099999999999998
     },
     "RUAShFaDNpHixyp7jFZu3EWph1DtC1AHwr": {
         "COQUICASH": 0.118
@@ -125,14 +125,14 @@
         "ZILLA": 0.060000000000000005
     },
     "RWZtikHgcyu6j6f96j9b1j4xPihZrT2NV4": {
-        "MGW": 0.031,
-        "OOT": 0.030000000000000002
+        "MGW": 0.131,
+        "OOT": 0.18
     },
     "RWchAeyXjfS7d15RXBQk6seoJPPstG47R9": {
         "HUSH3": 4.8798
     },
     "RWxiQzksyfhDcARnPWe852naEqgpCVJkeE": {
-        "MGW": 0.030000000000000002
+        "MGW": 0.13
     },
     "RXqv6UqYmKdQQBkCVsX4uJTjfAEQxvsxYE": {
         "BOTS": 0.031,
@@ -156,12 +156,12 @@
         "CRYPTO": 0.0006000000000000002,
         "DEX": 0.0007000000000000002,
         "HUSH3": 0.0005000000000000001,
-        "MGW": 0.0013999999999999996,
+        "MGW": 0.002099999999999999,
         "MORTY": 0.0008000000000000003,
-        "OOT": 0.0012,
-        "PANGEA": 0.0005000000000000001,
-        "REVS": 0.0006000000000000002,
-        "RFOX": 0.0009000000000000003,
+        "OOT": 0.004100000000000003,
+        "PANGEA": 0.0009000000000000003,
+        "REVS": 0.0007000000000000002,
+        "RFOX": 0.0013999999999999996,
         "RICK": 0.0008000000000000003,
         "THC": 0.0012,
         "ZILLA": 0.0008000000000000003
